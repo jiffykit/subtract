@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>Interactive Subtraction on Blackboard</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Shadows+Into+Light&display=swap');
+
+    body {
+      margin: 0;
+      padding: 0;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: #333;
+      font-family: 'Shadows Into Light', 'cursive';
+      padding: 1rem;
+      /* Add padding for smaller screens */
+      box-sizing: border-box;
+      transform: scale(0.9);
+      transform-origin: top left;
+    }
+
+    #board {
+      background: #000;
+      border: 8px solid #444;
+      box-shadow: 0 0 20px #000;
+      padding: 1rem;
+      /* Adjust padding for responsiveness */
+      width: 90%;
+      /* Adjust width for responsiveness */
+      max-width: 60rem;
+      /* Maintain maximum width for larger screens */
+      margin: auto;
+      /* Center the board */
+      color: #afa;
+      text-align: center;
+    }
+
+    #controls {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    #controls input,
+    #controls button {
+      margin: 0 0.5rem;
+      font-size: 2rem;
+      /* Increase controls size */
+    }
+
+    #controls input {
+      margin-bottom: 1rem;
+    }
+
+    .row {
+      display: flex;
+      justify-content: center;
+      /* Center the sum horizontally */
+      font-family: monospace;
+      font-size: 5rem;
+      /* Increase font size for better visibility */
+      white-space: pre;
+    }
+
+    .digit {
+      position: relative;
+      width: 2.4rem;
+      text-align: center;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 0.5rem;
+      /* Add margin to separate digits */
+    }
+
+    /* Mask non-active digits */
+    .mask {
+      position: absolute;
+      top: 0;
+      left: -0.6rem;
+      right: -0.6rem;
+      bottom: 0;
+      background: #000;
+      opacity: 0.8;
+    }
+
+    /* Highlight for active digits: bright yellow background */
+    .highlight-top,
+    .highlight-bot {
+      background: rgba(255, 255, 0, 0.8);
+      /* Slightly transparent yellow */
+      color: #000;
+      border-radius: 4px;
+      padding: 0.2rem;
+      margin-left: -4px;
+      /* Extend highlight 4px to the left */
+      margin-right: -4px;
+      /* Extend highlight 4px to the right */
+    }
+
+    /* Subscript element (borrowed tens) in dark red */
+    .sub-element {
+      font-size: 2rem;
+      /* Increase size of superscript numbers */
+      vertical-align: sub;
+      color: #f00;
+      /* Change to bright red */
+      font-weight: bold;
+      /* Make bold */
+    }
+
+    .input-digit {
+      width: 6rem;
+      /* Increase input box size */
+      font-size: 3rem;
+      /* Increase font size */
+      text-align: center;
+      margin: 0 0.5rem;
+      background: #3a3a3a;
+      border: 2px solid #afa;
+      color: #afa;
+      font-family: 'Shadows Into Light', 'cursive';
+      caret-color: #afa;
+    }
+
+    /* Update blue writing to be larger, brighter, and animated */
+    #step {
+      font-size: 4rem;
+      /* Increase size */
+      color: #00f;
+      /* Make it brighter */
+      animation: pulse 1.5s infinite;
+      /* Add shrinking and growing animation */
+    }
+
+    /* Add scribbly hand-drawn font for all text */
+    body,
+    #step,
+    .digit,
+    .input-digit,
+    button {
+      font-family: 'Shadows Into Light', 'cursive';
+      /* Hand-drawn font */
+    }
+
+    /* Define pulse animation */
+    @keyframes pulse {
+      0% {
+        transform: scale(1);
+      }
+
+      50% {
+        transform: scale(1.1);
+      }
+
+      100% {
+        transform: scale(1);
+      }
+    }
+
+    /* Adjusting the layout to move the answer line directly below the bottom line of the sum */
+    #results {
+      margin-top: 1rem;
+      /* Ensure spacing between the bottom line and the answer line */
+    }
+
+    /* Add spacing for negative signs */
+    .digit {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 0.5rem;
+      /* Add margin to separate digits */
+    }
+
+    /* Specific styling for negative signs */
+    .digit.negative {
+      margin-right: 0.5rem;
+      /* Add spacing after negative sign */
+    }
+
+    /* Adjust button layout and size */
+    #inputArea {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+      /* Add spacing between elements */
+      z-index: 10;
+      /* Ensure buttons are above other elements */
+      position: relative;
+      /* Ensure z-index takes effect */
+    }
+
+    #inputArea input {
+      flex: 1;
+      max-width: 10rem;
+      /* Ensure input box is not too wide */
+    }
+
+    #inputArea button {
+      flex: 0 0 auto;
+      font-size: 2rem;
+      /* Make buttons larger */
+      padding: 0.5rem 1rem;
+      /* Add padding for better clickability */
+      background: #444;
+      color: #afa;
+      border: 2px solid #afa;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    #inputArea button:hover {
+      background: #555;
+      /* Add hover effect */
+    }
+
+    /* Ensure dynamic layout for all screen sizes */
+    body {
+      padding: 1rem;
+      /* Add padding for smaller screens */
+      box-sizing: border-box;
+    }
+
+    #board {
+      padding: 1rem;
+      /* Adjust padding for responsiveness */
+      box-sizing: border-box;
+    }
+
+    #challengeOptions {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      background: #333;
+      color: #fff;
+      border: 3px solid #fff;
+      border-radius: 12px;
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      z-index: 102;
+    }
+
+    #challengeOptions select {
+      margin-bottom: 1rem;
+      font-size: 2rem;
+      background: #444;
+      color: #fff;
+      border: 2px solid #fff;
+      border-radius: 8px;
+      padding: 0.5rem;
+    }
+
+    #challengeOptions button {
+      font-size: 2rem;
+      padding: 0.5rem 1rem;
+      background: #444;
+      color: #fff;
+      border: 2px solid #fff;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    #challengeOptions button:hover {
+      background: #555;
+    }
+
+    #numberTypeToggle {
+      font-size: 2rem;
+      padding: 0.5rem 1rem;
+      background: #444;
+      color: #fff;
+      border: 2px solid #fff;
+      border-radius: 8px;
+      cursor: pointer;
+      margin-top: 1rem;
+    }
+
+    #numberTypeToggle:hover {
+      background: #555;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="board">
+    <h1>Blackboard Subtraction Game</h1>
+    <div id="controls">
+      <input type="text" id="minuend" placeholder="Top Number" />
+      <input type="text" id="subtrahend" placeholder="Bottom Number" />
+      <button id="startButton">Start</button>
+    </div>
+    <div id="problem"></div>
+    <div id="step"></div>
+    <div id="inputArea"></div>
+    <div id="results"></div>
+  </div>
+  <div id="challengeOptions">
+    <select id="digitCount">
+      <option value="1">1 Digit</option>
+      <option value="2">2 Digits</option>
+      <option value="3">3 Digits</option>
+      <option value="4">4 Digits</option>
+      <option value="5">5 Digits</option>
+      <option value="6">6 Digits</option>
+      <option value="7">7 Digits</option>
+      <option value="8">8 Digits</option>
+      <option value="9">9 Digits</option>
+      <option value="10">10 Digits</option>
+    </select>
+    <button id="includeDecimal">Toggle Decimal</button>
+    <button id="generateChallenge">Generate Challenge</button>
+    <button id="numberTypeToggle">Only Positive</button>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('startButton').addEventListener('click', startSubtraction);
+      document.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter') {
+          const idx = positions[col];
+          check(idx); // Trigger OK button functionality
+          setTimeout(() => {
+            const ansElement = document.getElementById('ans');
+            if (ansElement) {
+              ansElement.focus(); // Keep the text field focused
+            }
+          }, 100);
+        } else if (event.key.toLowerCase() === 'b') {
+          mode = 'selectSource';
+          document.getElementById('step').innerText = 'Click digit to BORROW FROM';
+        }
+      });
+    });
+
+    let mDigits = [], sDigits = [], workDigits = [], resultDigits = [], positions = [];
+    let col = 0, mode = 'compute', borrowSrc = null;
+
+    function startSubtraction() {
+      let m = document.getElementById('minuend').value;
+      let s = document.getElementById('subtrahend').value;
+      if (!/^-?\d+(\.\d+)?$/.test(m) || !/^-?\d+(\.\d+)?$/.test(s)) { alert('Invalid input'); return; }
+      const padded = padNums(m, s);
+      m = padded[0]; s = padded[1];
+      mDigits = [...m].map(c => c === '.' ? '.' : +c);
+      sDigits = [...s].map(c => c === '.' ? '.' : +c);
+      workDigits = mDigits.slice();
+      resultDigits = new Array(mDigits.length).fill(' ');
+      positions = mDigits.map((c, i) => c !== '.' ? i : -1).filter(i => i >= 0);
+      col = positions.length - 1;
+      mode = 'compute'; borrowSrc = null;
+      render();
+      nextStep();
+    }
+
+    function check(idx) {
+      const v = document.getElementById('ans').value;
+      if (!/^-?\d+(\.\d+)?$/.test(v)) {
+        document.getElementById('step').innerText = 'Invalid input, try again!';
+        return;
+      }
+      const numV = parseFloat(v);
+      const expectedResult = workDigits[idx] - sDigits[idx];
+
+      if (numV === expectedResult) {
+        resultDigits[idx] = numV;
+        col--;
+        mode = 'compute';
+        render();
+        nextStep();
+      } else {
+        document.getElementById('step').innerText = 'Try Again';
+      }
+    }
+
+    function padNums(a, b) {
+      let [ai, ad = ''] = a.split('.');
+      let [bi, bd = ''] = b.split('.');
+
+      // Pad only the leftmost column if it makes no difference to the answer
+      const maxIntLength = Math.max(ai.length, bi.length);
+      ai = ai.padStart(maxIntLength, '0');
+      bi = bi.padStart(maxIntLength, '0');
+
+      // Do not pad the rightmost columns; keep decimals as-is
+      return [ai + (ad ? '.' + ad : ''), bi + (bd ? '.' + bd : '')];
+    }
+
+    function nextStep() {
+      if (mode !== 'compute') return; // Prevent premature question updates
+
+      if (col >= 0) {
+        const idx0 = positions[col];
+        if (workDigits[idx0] === 0 && sDigits[idx0] === 0) {
+          if (col === 0) {
+            // Automatically add the result for 0+0 in the final leftmost column
+            resultDigits[idx0] = 0;
+            col--;
+            render();
+            document.getElementById('step').innerText = 'Correct - click for a new challenge';
+            document.getElementById('step').onclick = () => {
+              document.getElementById('generateChallenge').click();
+            };
+            return;
+          }
+          render();
+          return;
+        }
+      }
+
+      const area = document.getElementById('inputArea');
+      area.innerHTML = '';
+      if (col < 0) {
+        document.getElementById('step').innerText = 'Correct - click for a new challenge';
+        document.getElementById('step').onclick = () => {
+          document.getElementById('generateChallenge').click();
+        };
+        return;
+      }
+
+      const idx = positions[col];
+      const t = workDigits[idx], b = sDigits[idx];
+      document.getElementById('step').innerText = `What is ${t} - ${b}?`;
+
+      const inp = document.createElement('input');
+      inp.type = 'number';
+      inp.className = 'input-digit';
+      inp.id = 'ans';
+      area.appendChild(inp);
+
+      const btnContainer = document.createElement('div');
+      btnContainer.style.marginTop = '1rem';
+
+      const btnOK = document.createElement('button');
+      btnOK.innerText = 'OK';
+      btnOK.onclick = () => check(idx);
+
+      const btnB = document.createElement('button');
+      btnB.innerText = 'Borrow';
+      btnB.onclick = () => {
+        mode = 'selectSource';
+        document.getElementById('step').innerText = 'Click digit to BORROW FROM';
+      };
+
+      btnContainer.appendChild(btnOK);
+      btnContainer.appendChild(btnB);
+      area.appendChild(btnContainer);
+    }
+
+    function generateNewChallenge() {
+      document.getElementById('generateChallenge').click();
+    }
+
+    function handleClick(i) {
+      if (mode === 'selectSource') {
+        if (workDigits[i] === 0) {
+          document.getElementById('step').innerText = 'Cannot borrow from 0';
+          return;
+        }
+        borrowSrc = i;
+        cascadeBorrow(borrowSrc, positions[col]); // Ensure borrowing targets the correct column
+      } else if (mode === 'selectTarget') {
+        if (i !== positions[col]) {
+          document.getElementById('step').innerText = 'Incorrect target';
+          return;
+        }
+        document.getElementById('step').innerText = `Add 10 to column ${i}`;
+        animateChange(i, workDigits[i], workDigits[i] + 10, 1); // Ensure animation is invoked
+        setTimeout(() => {
+          workDigits[i] += 10;
+          render(); // Render after animation completes
+          mode = 'compute';
+          nextStep();
+        }, 800);
+      }
+    }
+
+    function cascadeBorrow(src, tgt) {
+      let i = tgt - 1;
+      function step() {
+        while (i >= 0 && workDigits[i] === '.') {
+          i--; // Skip the decimal point during borrowing
+        }
+        if (i >= 0 && workDigits[i] === 0) {
+          document.getElementById('step').innerText = `Column ${i} is 0, becomes 9, continue.`;
+          animateChange(i, workDigits[i], 9); // Animate zero becoming 9
+          setTimeout(() => {
+            workDigits[i] = 9;
+            i--;
+            step(); // Continue cascading borrow
+          }, 2500);
+        } else if (i >= 0) {
+          document.getElementById('step').innerText = `Borrow 1 from column ${i}`;
+          animateChange(i, workDigits[i], workDigits[i] - 1); // Animate decrement
+          setTimeout(() => {
+            workDigits[i]--;
+            document.getElementById('step').innerText = `Add 10 to column ${tgt}`;
+            animateChange(tgt, workDigits[tgt], workDigits[tgt] + 10); // Animate addition
+            setTimeout(() => {
+              workDigits[tgt] += 10;
+              render();
+              mode = 'compute';
+              nextStep();
+            }, 2500);
+          }, 2500);
+        }
+      }
+      step();
+    }
+
+    function animateChange(index, from, to, subscript = null) {
+      const digitElement = document.querySelectorAll('.digit')[index];
+      digitElement.style.transition = 'transform 2.5s, opacity 2.5s';
+      digitElement.style.transform = 'scale(0.5)';
+      digitElement.style.opacity = '0';
+      setTimeout(() => {
+        digitElement.innerHTML = subscript !== null
+          ? `<sub class='sub-element'>${subscript}</sub>${to}`
+          : `${to}`;
+        digitElement.style.transform = 'scale(1)';
+        digitElement.style.opacity = '1';
+      }, 2500);
+    }
+
+    function render() {
+      const prob = document.getElementById('problem'), res = document.getElementById('results'), inputArea = document.getElementById('inputArea');
+      prob.innerHTML = '';
+      res.innerHTML = '';
+      inputArea.innerHTML = '';
+
+      const topRow = document.createElement('div'), botRow = document.createElement('div'), resRow = document.createElement('div');
+      topRow.className = botRow.className = resRow.className = 'row';
+      const active = col >= 0 ? positions[col] : -1;
+
+      for (let i = 0; i < workDigits.length; i++) {
+        const m = workDigits[i], d = sDigits[i];
+        const ht = i === active ? 'highlight-top' : '';
+        const hb = i === active ? 'highlight-bot' : '';
+
+        if (m >= 10) {
+          const t = Math.floor(m / 10), u = m % 10;
+          topRow.innerHTML += `<div onclick="handleClick(${i})" class="digit ${ht}"><sub class="sub-element">${t}</sub>${u}</div>`;
+        } else {
+          topRow.innerHTML += `<div onclick="handleClick(${i})" class="digit ${ht}">${m}</div>`;
+        }
+
+        botRow.innerHTML += `<div onclick="handleClick(${i})" class="digit ${hb}">${d}</div>`;
+
+        const result = resultDigits[i];
+        if (typeof result === 'number' && result < 0) {
+          resRow.innerHTML += `<div class="digit negative">&minus;${Math.abs(result)}</div>`; // Ensure negative sign is properly aligned
+        } else if (result === '.' || m === '.' || d === '.') {
+          resRow.innerHTML += `<div class="digit">.</div>`; // Ensure decimal point is visible
+        } else {
+          resRow.innerHTML += `<div class="digit">${result}</div>`;
+        }
+      }
+
+      prob.appendChild(topRow);
+      prob.appendChild(botRow);
+      prob.appendChild(resRow); // Append the answer line directly below the sum
+
+      inputArea.style.marginTop = '2rem'; // Ensure proper spacing for the "Compute" prompt and buttons
+      inputArea.style.position = 'relative';
+      inputArea.style.top = '0';
+
+      const stepText = document.getElementById('step');
+      stepText.style.fontFamily = 'Shadows Into Light, cursive';
+      stepText.style.fontSize = '2rem';
+      stepText.style.color = '#6cf';
+      stepText.style.marginTop = '2rem';
+      stepText.style.marginBottom = '2rem'; // Add more space between the question and the answer box
+
+      if (mode === 'selectTarget') {
+        stepText.innerText = 'Which digit do you want to BORROW TO?';
+      } else {
+        stepText.innerText = col >= 0 ? `What is ${workDigits[positions[col]]} - ${sDigits[positions[col]]}?` : 'Correct';
+      }
+
+      const inp = document.createElement('input');
+      inp.type = 'number';
+      inp.className = 'input-digit';
+      inp.id = 'ans';
+      inp.style.marginTop = '1rem';
+      inputArea.appendChild(inp);
+
+      const btnContainer = document.createElement('div');
+      btnContainer.style.marginTop = '20px';
+      btnContainer.style.textAlign = 'center';
+
+      const btnOK = document.createElement('button');
+      btnOK.innerText = 'OK';
+      btnOK.style.fontFamily = 'Shadows Into Light, cursive';
+      btnOK.style.fontSize = '1.5rem';
+      btnOK.style.color = '#afa';
+      btnOK.style.background = 'none';
+      btnOK.style.border = 'none';
+      btnOK.onclick = () => {
+        const idx = positions[col];
+        const v = document.getElementById('ans').value;
+        check(idx);
+      };
+
+      const btnB = document.createElement('button');
+      btnB.innerText = 'Borrow';
+      btnB.style.fontFamily = 'Shadows Into Light', 'cursive';
+      btnB.style.fontSize = '1.5rem';
+      btnB.style.color = '#afa';
+      btnB.style.background = 'none';
+      btnB.style.border = 'none';
+      btnB.onclick = () => {
+        mode = 'selectSource';
+        document.getElementById('step').innerText = 'Click digit to BORROW FROM';
+      };
+
+      btnContainer.appendChild(btnOK);
+      btnContainer.appendChild(btnB);
+      inputArea.appendChild(btnContainer);
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const generateButton = document.getElementById('generateChallenge');
+      const digitCountSelect = document.getElementById('digitCount');
+      let includeDecimal = false;
+
+      document.getElementById('includeDecimal').addEventListener('click', () => {
+        includeDecimal = !includeDecimal;
+        alert(`Decimal point ${includeDecimal ? 'included' : 'excluded'}`);
+      });
+
+      digitCountSelect.addEventListener('change', () => {
+        const digitCount = digitCountSelect.value;
+        alert(`Selected ${digitCount} digit(s)`);
+      });
+
+      generateButton.addEventListener('click', () => {
+        const digitCount = parseInt(digitCountSelect.value, 10);
+        const max = Math.pow(10, digitCount) - 1;
+        const min = Math.pow(10, digitCount - 1);
+        let randomMinuend, randomSubtrahend;
+
+        if (numberType === 'positive') {
+          randomMinuend = (Math.random() * (max - min) + min).toFixed(includeDecimal ? 1 : 0);
+          randomSubtrahend = (Math.random() * (randomMinuend - min) + min).toFixed(includeDecimal ? 1 : 0);
+        } else if (numberType === 'negative') {
+          randomSubtrahend = (Math.random() * (max - min) + min).toFixed(includeDecimal ? 1 : 0);
+          randomMinuend = (Math.random() * (randomSubtrahend - min) + min).toFixed(includeDecimal ? 1 : 0);
+        } else {
+          randomMinuend = (Math.random() * (max - min) + min).toFixed(includeDecimal ? 1 : 0);
+          randomSubtrahend = (Math.random() * (max - min) + min).toFixed(includeDecimal ? 1 : 0);
+        }
+
+        document.getElementById('minuend').value = randomMinuend;
+        document.getElementById('subtrahend').value = randomSubtrahend;
+        startSubtraction();
+      });
+
+      const numberTypeToggle = document.getElementById('numberTypeToggle');
+      let numberType = 'positive'; // Default to 'Only Positive'
+
+      numberTypeToggle.addEventListener('click', () => {
+        if (numberType === 'positive') {
+          numberType = 'negative';
+          numberTypeToggle.innerText = 'Only Negative';
+        } else if (numberType === 'negative') {
+          numberType = 'mixed';
+          numberTypeToggle.innerText = 'Mixed';
+        } else {
+          numberType = 'positive';
+          numberTypeToggle.innerText = 'Only Positive';
+        }
+      });
+
+      document.getElementById('generateChallenge').addEventListener('click', () => {
+        const digitCount = parseInt(document.getElementById('digitCount').value, 10);
+        const max = Math.pow(10, digitCount) - 1;
+        const min = Math.pow(10, digitCount - 1);
+        let randomMinuend, randomSubtrahend;
+
+        if (numberType === 'positive') {
+          randomMinuend = (Math.random() * (max - min) + min).toFixed(includeDecimal ? 1 : 0);
+          randomSubtrahend = (Math.random() * (randomMinuend - min) + min).toFixed(includeDecimal ? 1 : 0);
+        } else if (numberType === 'negative') {
+          randomSubtrahend = (Math.random() * (max - min) + min).toFixed(includeDecimal ? 1 : 0);
+          randomMinuend = (Math.random() * (randomSubtrahend - min) + min).toFixed(includeDecimal ? 1 : 0);
+        } else {
+          randomMinuend = (Math.random() * (max - min) + min).toFixed(includeDecimal ? 1 : 0);
+          randomSubtrahend = (Math.random() * (max - min) + min).toFixed(includeDecimal ? 1 : 0);
+        }
+
+        document.getElementById('minuend').value = randomMinuend;
+        document.getElementById('subtrahend').value = randomSubtrahend;
+        startSubtraction();
+      });
+    });
+  </script>
+</body>
+
+</html>
