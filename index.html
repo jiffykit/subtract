@@ -14,7 +14,8 @@
       display: flex;
       justify-content: center;
       align-items: center;
-      background: #333;
+      background: linear-gradient(to top, skyblue, darkblue);
+      /* Sky blue to dark blue gradient */
       font-family: 'Shadows Into Light', 'cursive';
       padding: 1rem;
       /* Add padding for smaller screens */
@@ -24,7 +25,8 @@
     }
 
     #board {
-      background: #000;
+      background: #001a1a;
+      /* Very dark blackboard with a hint of green and blue */
       border: 8px solid #444;
       box-shadow: 0 0 20px #000;
       padding: 1rem;
@@ -37,6 +39,13 @@
       /* Center the board */
       color: #afa;
       text-align: center;
+    }
+
+    #board h1 {
+      font-size: 5rem;
+      /* Increase size by 80% */
+      font-weight: bold;
+      /* Make text bold */
     }
 
     #controls {
@@ -286,12 +295,134 @@
     #numberTypeToggle:hover {
       background: #555;
     }
+
+    /* Progress Tracker Styles */
+    #progressTracker {
+      position: absolute;
+      top: 10%;
+      right: 10%;
+      background: rgba(0, 0, 0, 0.8);
+      color: #fff;
+      border: 2px solid #fff;
+      border-radius: 12px;
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      z-index: 103;
+    }
+
+    #progressTracker h2 {
+      margin: 0 0 1rem 0;
+      font-size: 2.5rem;
+    }
+
+    #progressTracker button {
+      font-size: 1.5rem;
+      padding: 0.5rem 1rem;
+      background: #444;
+      color: #fff;
+      border: 2px solid #fff;
+      border-radius: 8px;
+      cursor: pointer;
+      margin: 0.5rem 0;
+    }
+
+    #progressTracker button:hover {
+      background: #555;
+    }
+
+    /* Graph Styles */
+    #progressGraph {
+      margin-top: 1rem;
+      border: 1px solid #fff;
+      border-radius: 8px;
+    }
+
+    /* Modal Styles */
+    #progressModal {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: #333;
+      color: #fff;
+      border: 3px solid #fff;
+      border-radius: 12px;
+      padding: 1rem;
+      z-index: 104;
+    }
+
+    #progressModal h2 {
+      margin: 0 0 1rem 0;
+      font-size: 2.5rem;
+    }
+
+    #closeProgress {
+      margin-top: 1rem;
+      font-size: 1.5rem;
+      padding: 0.5rem 1rem;
+      background: #444;
+      color: #fff;
+      border: 2px solid #fff;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    #closeProgress:hover {
+      background: #555;
+    }
+
+    /* Instructions Styles */
+    #instructions {
+      display: none;
+      font-family: Arial, sans-serif;
+      font-size: 2rem;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(0, 0, 0, 0.9);
+      color: #fff;
+      border: 3px solid #fff;
+      border-radius: 12px;
+      padding: 2rem;
+      z-index: 105;
+      max-width: 90%;
+      overflow-y: auto;
+      max-height: 80%;
+    }
+
+    .instruction-page {
+      display: none;
+    }
+
+    /* Ensure the body doesn't scroll when instructions are open */
+    body.no-scroll {
+      overflow: hidden;
+    }
+
+    /* Updated button styles with a plain sans-serif font */
+    button {
+      font-family: Arial, sans-serif;
+      font-size: 2rem;
+      color: #afa;
+      background: none;
+      border: none;
+      cursor: pointer;
+      text-decoration: underline;
+    }
+
+    button:hover {
+      color: #fff;
+    }
   </style>
 </head>
 
 <body>
   <div id="board">
-    <h1>Blackboard Subtraction Game</h1>
+    <h1>Subtraction Central!</h1>
     <div id="controls">
       <input type="text" id="minuend" placeholder="Top Number" />
       <input type="text" id="subtrahend" placeholder="Bottom Number" />
@@ -302,7 +433,7 @@
     <div id="inputArea"></div>
     <div id="results"></div>
   </div>
-  <div id="challengeOptions">
+  <div id="challengeOptions" style="position: relative;">
     <select id="digitCount">
       <option value="1">1 Digit</option>
       <option value="2">2 Digits</option>
@@ -315,9 +446,46 @@
       <option value="9">9 Digits</option>
       <option value="10">10 Digits</option>
     </select>
-    <button id="includeDecimal">Toggle Decimal</button>
-    <button id="generateChallenge">Generate Challenge</button>
+    <button id="generateChallenge">New Challenge</button>
     <button id="numberTypeToggle">Only Positive</button>
+    <button id="includeDecimal">Toggle Decimal</button>
+    <button id="enterName">Enter Name</button>
+    <button id="viewProgress">View Progress</button>
+    <button id="tutorial">Tutorial</button>
+  </div>
+
+  <div id="progressModal"
+    style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #333; color: #fff; border: 3px solid #fff; border-radius: 12px; padding: 1rem; z-index: 104;">
+    <h2 id="progressTitle">Progress for <span id="userNameDisplay">User</span></h2>
+    <select id="userDropdown" style="margin-bottom: 1rem; font-size: 1.5rem; padding: 0.5rem;">
+      <!-- Dynamically populated with user names -->
+    </select>
+    <canvas id="progressGraph" width="400" height="300"></canvas>
+    <button id="closeProgress"
+      style="margin-top: 1rem; font-size: 1.5rem; padding: 0.5rem 1rem; background: #444; color: #fff; border: 2px solid #fff; border-radius: 8px; cursor: pointer;">Close</button>
+  </div>
+
+  <div id="instructions" style="display: none; font-family: Arial, sans-serif; font-size: 2rem;">
+    <div id="page1" class="instruction-page">
+      <h1 style="font-size: 3rem;">Welcome to Subtraction Central!</h1>
+      <p>Click <strong>Generate Challenge</strong> to start a fun subtraction problem.</p>
+      <p>Choose the number of digits for harder problems.</p>
+      <button onclick="showPage('page2')">Next</button>
+    </div>
+
+    <div id="page2" class="instruction-page" style="display: none;">
+      <h1 style="font-size: 3rem;">Game Controls</h1>
+      <p><strong>Generate Challenge:</strong> Get a new subtraction problem.</p>
+      <p><strong>Borrow:</strong> Use this if the top number is smaller than the bottom number in a column.</p>
+      <p><strong>Toggle Decimal:</strong> Add or remove decimals for harder problems.</p>
+      <button onclick="showPage('page3')">Next</button>
+    </div>
+
+    <div id="page3" class="instruction-page" style="display: none;">
+      <h1 style="font-size: 3rem;">Have Fun!</h1>
+      <p>Subtraction is fun and easy! Keep practicing and challenge yourself.</p>
+      <button onclick="hideInstructions()">GO!</button>
+    </div>
   </div>
 
   <script>
@@ -374,7 +542,11 @@
         col--;
         mode = 'compute';
         render();
-        nextStep();
+        if (col < 0) {
+          playWinAnimation(); // Trigger win animation when challenge is completed
+        } else {
+          nextStep();
+        }
       } else {
         document.getElementById('step').innerText = 'Try Again';
       }
@@ -384,12 +556,16 @@
       let [ai, ad = ''] = a.split('.');
       let [bi, bd = ''] = b.split('.');
 
-      // Pad only the leftmost column if it makes no difference to the answer
+      // Pad the integer parts to the same length
       const maxIntLength = Math.max(ai.length, bi.length);
       ai = ai.padStart(maxIntLength, '0');
       bi = bi.padStart(maxIntLength, '0');
 
-      // Do not pad the rightmost columns; keep decimals as-is
+      // Pad the decimal parts to the same length
+      const maxDecLength = Math.max(ad.length, bd.length);
+      ad = ad.padEnd(maxDecLength, '0');
+      bd = bd.padEnd(maxDecLength, '0');
+
       return [ai + (ad ? '.' + ad : ''), bi + (bd ? '.' + bd : '')];
     }
 
@@ -460,8 +636,19 @@
 
     function handleClick(i) {
       if (mode === 'selectSource') {
+        if (workDigits[positions[col]] >= sDigits[positions[col]]) { // Check if borrowing is unnecessary
+          document.getElementById('step').innerText = 'Do not need to borrow anything';
+          setTimeout(() => {
+            const t = workDigits[positions[col]], b = sDigits[positions[col]];
+            document.getElementById('step').innerText = `What is ${t} - ${b}?`;
+          }, 0); // Immediately re-ask the sum question
+          return;
+        }
         if (workDigits[i] === 0) {
           document.getElementById('step').innerText = 'Cannot borrow from 0';
+          setTimeout(() => {
+            document.getElementById('step').innerText = 'Click digit to BORROW FROM';
+          }, 2000); // Re-ask the borrow question after 2 seconds
           return;
         }
         borrowSrc = i;
@@ -469,6 +656,9 @@
       } else if (mode === 'selectTarget') {
         if (i !== positions[col]) {
           document.getElementById('step').innerText = 'Incorrect target';
+          setTimeout(() => {
+            document.getElementById('step').innerText = 'Which digit do you want to BORROW TO?';
+          }, 2000); // Re-ask the borrow-to question after 2 seconds
           return;
         }
         document.getElementById('step').innerText = `Add 10 to column ${i}`;
@@ -483,11 +673,13 @@
     }
 
     function cascadeBorrow(src, tgt) {
-      let i = tgt - 1;
+      let i = tgt - 1; // Start from the target column - 1
+
       function step() {
         while (i >= 0 && workDigits[i] === '.') {
           i--; // Skip the decimal point during borrowing
         }
+
         if (i >= 0 && workDigits[i] === 0) {
           document.getElementById('step').innerText = `Column ${i} is 0, becomes 9, continue.`;
           animateChange(i, workDigits[i], 9); // Animate zero becoming 9
@@ -495,7 +687,7 @@
             workDigits[i] = 9;
             i--;
             step(); // Continue cascading borrow
-          }, 2500);
+          }, 1000); // Reduce delay for smoother cascading
         } else if (i >= 0) {
           document.getElementById('step').innerText = `Borrow 1 from column ${i}`;
           animateChange(i, workDigits[i], workDigits[i] - 1); // Animate decrement
@@ -508,10 +700,14 @@
               render();
               mode = 'compute';
               nextStep();
-            }, 2500);
-          }, 2500);
+            }, 1000); // Reduce delay for smoother addition
+          }, 1000);
+        } else {
+          document.getElementById('step').innerText = 'Borrowing failed: No valid source column.';
+          mode = 'compute';
         }
       }
+
       step();
     }
 
@@ -636,8 +832,8 @@
       });
 
       digitCountSelect.addEventListener('change', () => {
-        const digitCount = digitCountSelect.value;
-        alert(`Selected ${digitCount} digit(s)`);
+        const digitCount = parseInt(digitCountSelect.value, 10);
+        generateButton.click(); // Automatically generate a challenge
       });
 
       generateButton.addEventListener('click', () => {
@@ -700,6 +896,177 @@
         startSubtraction();
       });
     });
+
+    let userName = localStorage.getItem('userName') || '';
+    let progressData = JSON.parse(localStorage.getItem('progressData')) || {};
+
+    function saveProgressToRegistry() {
+      localStorage.setItem('progressData', JSON.stringify(progressData));
+    }
+
+    function loadProgressFromRegistry() {
+      const data = localStorage.getItem('progressData');
+      return data ? JSON.parse(data) : {};
+    }
+
+    progressData = loadProgressFromRegistry();
+
+    document.getElementById('enterName').addEventListener('click', () => {
+      const newUserName = prompt('Enter your name:');
+      if (newUserName) {
+        userName = newUserName;
+        localStorage.setItem('userName', userName);
+        if (!progressData[userName]) {
+          progressData[userName] = {};
+          saveProgressToRegistry();
+        }
+        alert(`Welcome, ${userName}!`);
+      }
+    });
+
+    document.getElementById('viewProgress').addEventListener('click', () => {
+      const modal = document.getElementById('progressModal');
+      const canvas = document.getElementById('progressGraph');
+      const ctx = canvas.getContext('2d');
+      const userDropdown = document.getElementById('userDropdown');
+      const userNameDisplay = document.getElementById('userNameDisplay');
+
+      modal.style.display = 'block';
+
+      // Populate dropdown with user names
+      userDropdown.innerHTML = '';
+      const users = Object.keys(progressData);
+      users.forEach(user => {
+        const option = document.createElement('option');
+        option.value = user;
+        option.textContent = user;
+        userDropdown.appendChild(option);
+      });
+
+      userDropdown.value = userName || users[0] || '';
+      userNameDisplay.innerText = userDropdown.value || 'User';
+
+      userDropdown.addEventListener('change', () => {
+        userNameDisplay.innerText = userDropdown.value;
+        renderProgressGraph(userDropdown.value);
+      });
+
+      renderProgressGraph(userDropdown.value);
+
+      function renderProgressGraph(selectedUser) {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        const hours = Array.from({ length: 24 }, (_, i) => i);
+        const colors = ['red', 'blue', 'green', 'orange', 'purple', 'brown', 'pink', 'cyan', 'yellow', 'black'];
+
+        const userProgress = progressData[selectedUser] || {};
+        Object.keys(userProgress).forEach((digitKey, i) => {
+          ctx.beginPath();
+          ctx.strokeStyle = colors[i % colors.length];
+          ctx.lineWidth = 2;
+
+          hours.forEach((hour, index) => {
+            const challenges = userProgress[digitKey]?.[hour] || 0;
+            const x = 20 + index * 15;
+            const y = canvas.height - challenges * 10;
+
+            if (index === 0) {
+              ctx.moveTo(x, y);
+            } else {
+              ctx.lineTo(x, y);
+            }
+          });
+
+          ctx.stroke();
+
+          // Add label for the digitKey
+          ctx.fillStyle = colors[i % colors.length];
+          ctx.fillText(digitKey, 10, 20 + i * 15);
+        });
+      }
+    });
+
+    document.getElementById('closeProgress').addEventListener('click', () => {
+      document.getElementById('progressModal').style.display = 'none';
+    });
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const hasSeenInstructions = localStorage.getItem('hasSeenInstructions');
+      if (!hasSeenInstructions) {
+        showInstructions();
+        localStorage.setItem('hasSeenInstructions', 'true');
+      }
+
+      document.getElementById('tutorial').addEventListener('click', () => {
+        showInstructions();
+      });
+    });
+
+    function showInstructions() {
+      const instructions = document.getElementById('instructions');
+      instructions.style.display = 'block';
+      document.body.classList.add('no-scroll'); // Prevent scrolling when instructions are open
+      showPage('page1'); // Start with the first page
+    }
+
+    function hideInstructions() {
+      const instructions = document.getElementById('instructions');
+      instructions.style.display = 'none';
+      document.body.classList.remove('no-scroll'); // Re-enable scrolling
+    }
+
+    function showPage(pageId) {
+      const pages = document.querySelectorAll('.instruction-page');
+      pages.forEach(page => page.style.display = 'none'); // Hide all pages
+      document.getElementById(pageId).style.display = 'block'; // Show the selected page
+    }
+
+    function updateProgress(digitCount) {
+      const hour = new Date().getHours();
+      const digitKey = `${digitCount}-digits`;
+
+      if (!progressData[userName]) progressData[userName] = {};
+      if (!progressData[userName][digitKey]) progressData[userName][digitKey] = {};
+      if (!progressData[userName][digitKey][hour]) progressData[userName][digitKey][hour] = 0;
+
+      progressData[userName][digitKey][hour]++;
+      saveProgressToRegistry();
+    }
+
+    function playWinAnimation() {
+      const body = document.body;
+      const board = document.getElementById('board');
+
+      // Add rainbow animation to the sky
+      body.style.animation = 'rainbowSky 4s linear';
+
+      // Add green flash to the blackboard
+      board.style.transition = 'background-color 0.5s';
+      board.style.backgroundColor = 'lime';
+
+      setTimeout(() => {
+        board.style.backgroundColor = '#001a1a'; // Reset to original color
+      }, 1000);
+
+      // Remove animation after 4 seconds
+      setTimeout(() => {
+        body.style.animation = '';
+        generateNewChallenge(); // Transition to a new challenge
+      }, 4000);
+    }
+
+    // Add rainbow animation keyframes
+    const style = document.createElement('style');
+    style.innerHTML = `
+      @keyframes rainbowSky {
+        0% { background: linear-gradient(to top, red, orange); }
+        25% { background: linear-gradient(to top, yellow, green); }
+        50% { background: linear-gradient(to top, blue, indigo); }
+        75% { background: linear-gradient(to top, violet, red); }
+        100% { background: linear-gradient(to top, red, orange); }
+      }
+    `;
+    document.head.appendChild(style);
   </script>
 </body>
 
