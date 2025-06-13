@@ -337,11 +337,41 @@
       margin-top: 1rem;
       border: 1px solid #fff;
       border-radius: 8px;
+      display: flex;
+      justify-content: space-evenly;
+      align-items: flex-end;
+      height: 300px;
+      background: #222;
+    }
+
+    .bar {
+      width: 20px;
+      margin: 0 5px;
+      display: inline-block;
+      position: relative;
+    }
+
+    .bar.max {
+      background-color: #ff6347;
+      /* Tomato color for max */
+    }
+
+    .bar.avg {
+      background-color: #4682b4;
+      /* Steel blue for average */
+    }
+
+    .bar span {
+      position: absolute;
+      bottom: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      color: #fff;
+      font-size: 0.8rem;
     }
 
     /* Modal Styles */
-    #progressModal {
-      display: none;
+    #progressChart {
       position: fixed;
       top: 50%;
       left: 50%;
@@ -350,28 +380,12 @@
       color: #fff;
       border: 3px solid #fff;
       border-radius: 12px;
-      padding: 1rem;
-      z-index: 104;
-    }
-
-    #progressModal h2 {
-      margin: 0 0 1rem 0;
-      font-size: 2.5rem;
-    }
-
-    #closeProgress {
-      margin-top: 1rem;
-      font-size: 1.5rem;
-      padding: 0.5rem 1rem;
-      background: #444;
-      color: #fff;
-      border: 2px solid #fff;
-      border-radius: 8px;
-      cursor: pointer;
-    }
-
-    #closeProgress:hover {
-      background: #555;
+      padding: 2rem;
+      z-index: 9999;
+      max-width: 90%;
+      max-height: 80%;
+      overflow-y: auto;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.8);
     }
 
     /* Instructions Styles */
@@ -417,6 +431,41 @@
     button:hover {
       color: #fff;
     }
+
+    /* Added keyframes for grow-from-point animation */
+    @keyframes growFromPoint {
+      0% {
+        transform: scale(0.5);
+        opacity: 0;
+      }
+
+      50% {
+        transform: scale(1.2);
+        opacity: 1;
+      }
+
+      100% {
+        transform: scale(1);
+        opacity: 1;
+      }
+    }
+
+    @keyframes grow-from-point {
+      0% {
+        transform: scale(0.5);
+        opacity: 0;
+      }
+
+      50% {
+        transform: scale(1.2);
+        opacity: 1;
+      }
+
+      100% {
+        transform: scale(1);
+        opacity: 1;
+      }
+    }
   </style>
 </head>
 
@@ -454,17 +503,6 @@
     <button id="tutorial">Tutorial</button>
   </div>
 
-  <div id="progressModal"
-    style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #333; color: #fff; border: 3px solid #fff; border-radius: 12px; padding: 1rem; z-index: 104;">
-    <h2 id="progressTitle">Progress for <span id="userNameDisplay">User</span></h2>
-    <select id="userDropdown" style="margin-bottom: 1rem; font-size: 1.5rem; padding: 0.5rem;">
-      <!-- Dynamically populated with user names -->
-    </select>
-    <canvas id="progressGraph" width="400" height="300"></canvas>
-    <button id="closeProgress"
-      style="margin-top: 1rem; font-size: 1.5rem; padding: 0.5rem 1rem; background: #444; color: #fff; border: 2px solid #fff; border-radius: 8px; cursor: pointer;">Close</button>
-  </div>
-
   <div id="instructions" style="display: none; font-family: Arial, sans-serif; font-size: 2rem;">
     <div id="page1" class="instruction-page">
       <h1 style="font-size: 3rem;">Welcome to Subtraction Central!</h1>
@@ -485,6 +523,19 @@
       <h1 style="font-size: 3rem;">Have Fun!</h1>
       <p>Subtraction is fun and easy! Keep practicing and challenge yourself.</p>
       <button onclick="hideInstructions()">GO!</button>
+    </div>
+  </div>
+
+  <button id="aboutBtn"
+    style="position:fixed; bottom:20px; right:20px; z-index:10000; background:#222; color:#afa; border:2px solid #afa; border-radius:8px; font-size:1.2rem; padding:0.5rem 1.2rem; cursor:pointer;">About</button>
+  <div id="aboutModal"
+    style="display:none; position:fixed; bottom:0; right:0; left:auto; top:auto; margin:2rem; z-index:10001; background:#222; color:#fff; border:3px solid #fff; border-radius:12px; padding:2rem; max-width:350px; box-shadow:0 0 20px #000;">
+    <span id="closeAbout"
+      style="position:absolute; top:10px; right:16px; font-size:2rem; cursor:pointer; color:#fff;">&times;</span>
+    <div style="font-size:1.2rem; line-height:1.6;">
+      Designed and built by <b>James Mulvale</b> for his kid, Ozzie who was a bit stuck with his subtractions.<br><br>
+      I hope you find it fun and useful.<br><br>
+      Bugs/coffee donations: <a href="mailto:james.mulvale@gmail.com" style="color:#afa;">james.mulvale@gmail.com</a> :D
     </div>
   </div>
 
@@ -511,24 +562,45 @@
     let mDigits = [], sDigits = [], workDigits = [], resultDigits = [], positions = [];
     let col = 0, mode = 'compute', borrowSrc = null;
 
+    // --- INTEGRATE PROGRESS TRACKING INTO GAME LOGIC ---
+    // Add these variables at the top of the script (after let col = 0, ...):
+    let challengeStartTime = 0;
+    let wrongAttempts = 0;
+    let correctSteps = 0;
+    let totalSteps = 0;
+    let currentCombo = 0;
+    let lastCorrectTimestamp = 0;
+
+    // In startSubtraction, reset tracking variables and start timer
     function startSubtraction() {
       let m = document.getElementById('minuend').value;
       let s = document.getElementById('subtrahend').value;
-      if (!/^-?\d+(\.\d+)?$/.test(m) || !/^-?\d+(\.\d+)?$/.test(s)) { alert('Invalid input'); return; }
+      if (!/^-?\d+(\.\d+)?$/.test(m) || !/^-?\d+(\.\d+)?$/.test(s)) {
+        alert('Invalid input');
+        return;
+      }
       const padded = padNums(m, s);
-      m = padded[0]; s = padded[1];
+      m = padded[0];
+      s = padded[1];
       mDigits = [...m].map(c => c === '.' ? '.' : +c);
       sDigits = [...s].map(c => c === '.' ? '.' : +c);
       workDigits = mDigits.slice();
-      resultDigits = new Array(mDigits.length).fill(' ');
+      resultDigits = new Array(mDigits.length).fill('&nbsp;'); // Pre-fill answer row with blank spaces
       positions = mDigits.map((c, i) => c !== '.' ? i : -1).filter(i => i >= 0);
       col = positions.length - 1;
-      mode = 'compute'; borrowSrc = null;
+      mode = 'compute';
+      borrowSrc = null;
+      wrongAttempts = 0;
+      correctSteps = 0;
+      totalSteps = 0;
+      challengeStartTime = Date.now();
       render();
       nextStep();
     }
 
+    // In check(idx), increment totalSteps and track correct/incorrect
     function check(idx) {
+      totalSteps++;
       const v = document.getElementById('ans').value;
       if (!/^-?\d+(\.\d+)?$/.test(v)) {
         document.getElementById('step').innerText = 'Invalid input, try again!';
@@ -536,20 +608,45 @@
       }
       const numV = parseFloat(v);
       const expectedResult = workDigits[idx] - sDigits[idx];
-
+      let isCorrect = false;
       if (numV === expectedResult) {
-        resultDigits[idx] = numV;
-        col--;
+        correctSteps++;
+        isCorrect = true;
+        // Combo logic
+        if (lastCorrectTimestamp && Date.now() - lastCorrectTimestamp < 10000) {
+          currentCombo++;
+        } else {
+          currentCombo = 1;
+        }
+        lastCorrectTimestamp = Date.now();
+        resultDigits[idx] = numV; // Write the answer to the blackboard
+        render(); // Ensure the answer row is updated
+        // FIX: Ensure column only decrements once
+        if (mode === 'compute') {
+          col--;
+        }
         mode = 'compute';
-        render();
         if (col < 0) {
           playWinAnimation(); // Trigger win animation when challenge is completed
         } else {
           nextStep();
         }
       } else {
+        wrongAttempts++;
+        currentCombo = 0;
         document.getElementById('step').innerText = 'Try Again';
       }
+      // --- LOG STEP PROGRESS ---
+      recordStepProgress({
+        digits: mDigits.filter(d => typeof d === 'number').length,
+        decimals: mDigits.includes('.') ? 1 : 0,
+        correct: isCorrect ? 1 : 0,
+        incorrect: isCorrect ? 0 : 1,
+        stepType: isCorrect ? 'correct' : 'incorrect',
+        speed: (Date.now() - challengeStartTime) / 1000,
+        combo: currentCombo,
+        challengeType: mDigits.includes('.') ? 'decimal' : 'integer'
+      });
     }
 
     function padNums(a, b) {
@@ -569,9 +666,20 @@
       return [ai + (ad ? '.' + ad : ''), bi + (bd ? '.' + bd : '')];
     }
 
+    /* Ensure dynamically generated blue text is styled */
+    function updateStepText(content) {
+      const stepText = document.getElementById('step');
+      stepText.style.fontSize = '5rem'; /* Match the size of sums */
+      stepText.style.fontWeight = 'bold'; /* Keep text bold */
+      stepText.style.color = '#00f'; /* Ensure blue color */
+      stepText.innerText = content;
+    }
+
     function nextStep() {
       if (mode !== 'compute') return; // Prevent premature question updates
 
+      // Remove auto-solve for 0-0 columns
+      /*
       if (col >= 0) {
         const idx0 = positions[col];
         if (workDigits[idx0] === 0 && sDigits[idx0] === 0) {
@@ -590,6 +698,7 @@
           return;
         }
       }
+      */
 
       const area = document.getElementById('inputArea');
       area.innerHTML = '';
@@ -628,6 +737,24 @@
       btnContainer.appendChild(btnOK);
       btnContainer.appendChild(btnB);
       area.appendChild(btnContainer);
+
+      // Ensure highlighter is aligned for both top and bottom rows
+      const activeTopHighlight = document.querySelector('.highlight-top');
+      const activeBotHighlight = document.querySelector('.highlight-bot');
+      if (activeTopHighlight) {
+        activeTopHighlight.classList.remove('highlight-top');
+      }
+      if (activeBotHighlight) {
+        activeBotHighlight.classList.remove('highlight-bot');
+      }
+      const newTopHighlight = document.querySelectorAll('.row')[0].querySelectorAll('.digit')[idx];
+      const newBotHighlight = document.querySelectorAll('.row')[1].querySelectorAll('.digit')[idx];
+      if (newTopHighlight) {
+        newTopHighlight.classList.add('highlight-top');
+      }
+      if (newBotHighlight) {
+        newBotHighlight.classList.add('highlight-bot');
+      }
     }
 
     function generateNewChallenge() {
@@ -652,6 +779,20 @@
           return;
         }
         borrowSrc = i;
+        // --- LOG CORRECT STEP (borrow source) ---
+        recordStepProgress({
+          digits: mDigits.filter(d => typeof d === 'number').length,
+          decimals: mDigits.includes('.') ? 1 : 0,
+          correct: 1,
+          incorrect: 0,
+          correctSteps,
+          totalSteps,
+          stepType: 'correct',
+          action: 'borrow-source',
+          speed: (Date.now() - challengeStartTime) / 1000,
+          combo: currentCombo,
+          challengeType: mDigits.includes('.') ? 'decimal' : 'integer'
+        });
         cascadeBorrow(borrowSrc, positions[col]); // Ensure borrowing targets the correct column
       } else if (mode === 'selectTarget') {
         if (i !== positions[col]) {
@@ -661,11 +802,25 @@
           }, 2000); // Re-ask the borrow-to question after 2 seconds
           return;
         }
+        // --- LOG CORRECT STEP (borrow target) ---
+        recordStepProgress({
+          digits: mDigits.filter(d => typeof d === 'number').length,
+          decimals: mDigits.includes('.') ? 1 : 0,
+          correct: 1,
+          incorrect: 0,
+          correctSteps,
+          totalSteps,
+          stepType: 'correct',
+          action: 'borrow-target',
+          speed: (Date.now() - challengeStartTime) / 1000,
+          combo: currentCombo,
+          challengeType: mDigits.includes('.') ? 'decimal' : 'integer'
+        });
         document.getElementById('step').innerText = `Add 10 to column ${i}`;
-        animateChange(i, workDigits[i], workDigits[i] + 10, 1); // Ensure animation is invoked
+        animateChange(i, workDigits[i], workDigits[i] + 10, 1);
         setTimeout(() => {
           workDigits[i] += 10;
-          render(); // Render after animation completes
+          render();
           mode = 'compute';
           nextStep();
         }, 800);
@@ -681,7 +836,7 @@
         }
 
         if (i >= 0 && workDigits[i] === 0) {
-          document.getElementById('step').innerText = `Column ${i} is 0, becomes 9, continue.`;
+          document.getElementById('step').innerText = `Column ${i + 1} is 0, becomes 9, continue.`; // Correct column number
           animateChange(i, workDigits[i], 9); // Animate zero becoming 9
           setTimeout(() => {
             workDigits[i] = 9;
@@ -689,17 +844,18 @@
             step(); // Continue cascading borrow
           }, 1000); // Reduce delay for smoother cascading
         } else if (i >= 0) {
-          document.getElementById('step').innerText = `Borrow 1 from column ${i}`;
+          document.getElementById('step').innerText = `Borrow 1 from column ${i + 1}`; // Correct column number
           animateChange(i, workDigits[i], workDigits[i] - 1); // Animate decrement
           setTimeout(() => {
             workDigits[i]--;
-            document.getElementById('step').innerText = `Add 10 to column ${tgt}`;
+            document.getElementById('step').innerText = `Add 10 to column ${tgt + 1}`; // Correct column number
             animateChange(tgt, workDigits[tgt], workDigits[tgt] + 10); // Animate addition
             setTimeout(() => {
               workDigits[tgt] += 10;
               render();
+              // FIX: Ensure borrowing does not interfere with tracking stats
               mode = 'compute';
-              nextStep();
+              nextStep(); // Allow user to answer the current column
             }, 1000); // Reduce delay for smoother addition
           }, 1000);
         } else {
@@ -725,11 +881,28 @@
       }, 2500);
     }
 
+    // Ensure all buttons in the game use plain sans-serif styling
+    function applyButtonStyles() {
+      const buttons = document.querySelectorAll('button');
+      buttons.forEach(button => {
+        button.style.fontFamily = 'Arial, sans-serif';
+        button.style.fontSize = '2rem';
+        button.style.color = '#afa';
+        button.style.background = '#444';
+        button.style.border = '2px solid #afa';
+        button.style.borderRadius = '8px';
+        button.style.cursor = 'pointer';
+      });
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      applyButtonStyles();
+    });
+
     function render() {
-      const prob = document.getElementById('problem'), res = document.getElementById('results'), inputArea = document.getElementById('inputArea');
+      const prob = document.getElementById('problem'), res = document.getElementById('results');
       prob.innerHTML = '';
       res.innerHTML = '';
-      inputArea.innerHTML = '';
 
       const topRow = document.createElement('div'), botRow = document.createElement('div'), resRow = document.createElement('div');
       topRow.className = botRow.className = resRow.className = 'row';
@@ -750,75 +923,14 @@
         botRow.innerHTML += `<div onclick="handleClick(${i})" class="digit ${hb}">${d}</div>`;
 
         const result = resultDigits[i];
-        if (typeof result === 'number' && result < 0) {
-          resRow.innerHTML += `<div class="digit negative">&minus;${Math.abs(result)}</div>`; // Ensure negative sign is properly aligned
-        } else if (result === '.' || m === '.' || d === '.') {
-          resRow.innerHTML += `<div class="digit">.</div>`; // Ensure decimal point is visible
-        } else {
-          resRow.innerHTML += `<div class="digit">${result}</div>`;
-        }
+        resRow.innerHTML += `<div class="digit" style="color: white; font-size: 5rem;">${i === active && result === '&nbsp;' ? '?' : result !== '&nbsp;' ? result : '&nbsp;'}</div>`; // Show '?' only under the current step and shift left once correct digit is entered
       }
 
       prob.appendChild(topRow);
       prob.appendChild(botRow);
       prob.appendChild(resRow); // Append the answer line directly below the sum
 
-      inputArea.style.marginTop = '2rem'; // Ensure proper spacing for the "Compute" prompt and buttons
-      inputArea.style.position = 'relative';
-      inputArea.style.top = '0';
-
-      const stepText = document.getElementById('step');
-      stepText.style.fontFamily = 'Shadows Into Light, cursive';
-      stepText.style.fontSize = '2rem';
-      stepText.style.color = '#6cf';
-      stepText.style.marginTop = '2rem';
-      stepText.style.marginBottom = '2rem'; // Add more space between the question and the answer box
-
-      if (mode === 'selectTarget') {
-        stepText.innerText = 'Which digit do you want to BORROW TO?';
-      } else {
-        stepText.innerText = col >= 0 ? `What is ${workDigits[positions[col]]} - ${sDigits[positions[col]]}?` : 'Correct';
-      }
-
-      const inp = document.createElement('input');
-      inp.type = 'number';
-      inp.className = 'input-digit';
-      inp.id = 'ans';
-      inp.style.marginTop = '1rem';
-      inputArea.appendChild(inp);
-
-      const btnContainer = document.createElement('div');
-      btnContainer.style.marginTop = '20px';
-      btnContainer.style.textAlign = 'center';
-
-      const btnOK = document.createElement('button');
-      btnOK.innerText = 'OK';
-      btnOK.style.fontFamily = 'Shadows Into Light, cursive';
-      btnOK.style.fontSize = '1.5rem';
-      btnOK.style.color = '#afa';
-      btnOK.style.background = 'none';
-      btnOK.style.border = 'none';
-      btnOK.onclick = () => {
-        const idx = positions[col];
-        const v = document.getElementById('ans').value;
-        check(idx);
-      };
-
-      const btnB = document.createElement('button');
-      btnB.innerText = 'Borrow';
-      btnB.style.fontFamily = 'Shadows Into Light', 'cursive';
-      btnB.style.fontSize = '1.5rem';
-      btnB.style.color = '#afa';
-      btnB.style.background = 'none';
-      btnB.style.border = 'none';
-      btnB.onclick = () => {
-        mode = 'selectSource';
-        document.getElementById('step').innerText = 'Click digit to BORROW FROM';
-      };
-
-      btnContainer.appendChild(btnOK);
-      btnContainer.appendChild(btnB);
-      inputArea.appendChild(btnContainer);
+      applyButtonStyles(); // Ensure buttons retain consistent styling
     }
 
     document.addEventListener('DOMContentLoaded', () => {
@@ -898,97 +1010,326 @@
     });
 
     let userName = localStorage.getItem('userName') || '';
-    let progressData = JSON.parse(localStorage.getItem('progressData')) || {};
+    let allProgress = {};
+    try {
+      allProgress = JSON.parse(localStorage.getItem('allProgress')) || {};
+    } catch (e) { allProgress = {}; }
 
-    function saveProgressToRegistry() {
-      localStorage.setItem('progressData', JSON.stringify(progressData));
+    function saveAllProgress() {
+      localStorage.setItem('allProgress', JSON.stringify(allProgress));
     }
 
-    function loadProgressFromRegistry() {
-      const data = localStorage.getItem('progressData');
-      return data ? JSON.parse(data) : {};
+    function getCurrentUserProgress() {
+      if (!userName) return [];
+      if (!allProgress[userName]) allProgress[userName] = [];
+      return allProgress[userName];
     }
 
-    progressData = loadProgressFromRegistry();
+    // --- TRACKING LOGIC ---
+    // Call this after every step (not just challenge)
+    function recordStepProgress({
+      digits, decimals, correct, incorrect, stepType, action, speed, combo, challengeType
+    }) {
+      if (!userName) return;
+      if (!allProgress[userName]) allProgress[userName] = [];
+      allProgress[userName].push({
+        timestamp: Date.now(),
+        digits, decimals, correct, incorrect,
+        correctSteps: stepType === 'correct' ? 1 : 0,
+        totalSteps: 1,
+        stepType, action, speed, combo, challengeType
+      });
+      saveAllProgress();
+      // If chart modal is open, re-render the graph
+      const chartModal = document.getElementById('progressChart');
+      if (chartModal && typeof window.renderGraph === 'function') window.renderGraph();
+    }
+
+    // Change button label from Enter Name to New User
+    document.getElementById('enterName').textContent = 'New User';
+
+    // Track if userName has changed in this session
+    let lastUserName = userName;
 
     document.getElementById('enterName').addEventListener('click', () => {
       const newUserName = prompt('Enter your name:');
       if (newUserName) {
         userName = newUserName;
+        lastUserName = userName;
         localStorage.setItem('userName', userName);
-        if (!progressData[userName]) {
-          progressData[userName] = {};
-          saveProgressToRegistry();
+        if (!allProgress[userName]) {
+          allProgress[userName] = [];
+          saveAllProgress();
         }
         alert(`Welcome, ${userName}!`);
       }
     });
 
     document.getElementById('viewProgress').addEventListener('click', () => {
-      const modal = document.getElementById('progressModal');
-      const canvas = document.getElementById('progressGraph');
-      const ctx = canvas.getContext('2d');
-      const userDropdown = document.getElementById('userDropdown');
-      const userNameDisplay = document.getElementById('userNameDisplay');
+      // Logic to display the graph-based modal
+      showProgressModal();
+    });
 
-      modal.style.display = 'block';
+    // --- PROGRESS MODAL WITH SCALABLE BAR CHARTS, SLIDER, RADIO BUTTONS ---
+    function showProgressModal() {
+      // Define filter variables at the top so they are accessible to renderGraph
+      let selectedDigits = 'all';
+      let selectedDecimals = 'all';
 
-      // Populate dropdown with user names
-      userDropdown.innerHTML = '';
-      const users = Object.keys(progressData);
-      users.forEach(user => {
-        const option = document.createElement('option');
-        option.value = user;
-        option.textContent = user;
-        userDropdown.appendChild(option);
-      });
+      // Remove any existing modal
+      const oldModal = document.getElementById('progressChart');
+      if (oldModal) oldModal.remove();
 
-      userDropdown.value = userName || users[0] || '';
-      userNameDisplay.innerText = userDropdown.value || 'User';
+      // Modal setup
+      const modal = document.createElement('div');
+      modal.id = 'progressChart';
+      modal.style.display = 'block'; // Ensure modal is visible
 
-      userDropdown.addEventListener('change', () => {
-        userNameDisplay.innerText = userDropdown.value;
-        renderProgressGraph(userDropdown.value);
-      });
+      // Close button (top right)
+      const closeBtn = document.createElement('button');
+      closeBtn.innerText = '✕';
+      closeBtn.style.position = 'absolute';
+      closeBtn.style.top = '1rem';
+      closeBtn.style.right = '1rem';
+      closeBtn.style.fontSize = '2rem';
+      closeBtn.style.background = '#444';
+      closeBtn.style.color = '#fff';
+      closeBtn.style.border = 'none';
+      closeBtn.style.borderRadius = '50%';
+      closeBtn.style.width = '2.5rem';
+      closeBtn.style.height = '2.5rem';
+      closeBtn.style.cursor = 'pointer';
+      closeBtn.onclick = () => modal.remove();
+      modal.appendChild(closeBtn);
 
-      renderProgressGraph(userDropdown.value);
-
-      function renderProgressGraph(selectedUser) {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-        const hours = Array.from({ length: 24 }, (_, i) => i);
-        const colors = ['red', 'blue', 'green', 'orange', 'purple', 'brown', 'pink', 'cyan', 'yellow', 'black'];
-
-        const userProgress = progressData[selectedUser] || {};
-        Object.keys(userProgress).forEach((digitKey, i) => {
-          ctx.beginPath();
-          ctx.strokeStyle = colors[i % colors.length];
-          ctx.lineWidth = 2;
-
-          hours.forEach((hour, index) => {
-            const challenges = userProgress[digitKey]?.[hour] || 0;
-            const x = 20 + index * 15;
-            const y = canvas.height - challenges * 10;
-
-            if (index === 0) {
-              ctx.moveTo(x, y);
-            } else {
-              ctx.lineTo(x, y);
-            }
-          });
-
-          ctx.stroke();
-
-          // Add label for the digitKey
-          ctx.fillStyle = colors[i % colors.length];
-          ctx.fillText(digitKey, 10, 20 + i * 15);
+      // User selector if multiple users
+      const userNames = Object.keys(allProgress);
+      let selectedUser = userName;
+      if (userNames.length > 1) {
+        const userSelect = document.createElement('select');
+        userNames.forEach(n => {
+          const opt = document.createElement('option');
+          opt.value = n; opt.textContent = n;
+          if (n === userName) opt.selected = true;
+          userSelect.appendChild(opt);
         });
+        userSelect.onchange = () => { selectedUser = userSelect.value; renderGraph(); };
+        modal.appendChild(userSelect);
       }
-    });
 
-    document.getElementById('closeProgress').addEventListener('click', () => {
-      document.getElementById('progressModal').style.display = 'none';
-    });
+      // Radio buttons for stat type
+      const statTypes = [
+        { key: 'correct', label: 'Correct' },
+        { key: 'incorrect', label: 'Incorrect' },
+        { key: 'correctSteps', label: 'Correct Steps' },
+        { key: 'totalSteps', label: 'Total Steps' },
+        { key: 'speed', label: 'Speed (s)' },
+        { key: 'combo', label: 'Combo' }
+      ];
+      let selectedStat = 'correct';
+      const radioWrap = document.createElement('div');
+      radioWrap.style.display = 'flex';
+      radioWrap.style.gap = '1.5rem';
+      radioWrap.style.margin = '1rem 0';
+      statTypes.forEach(st => {
+        const label = document.createElement('label');
+        label.style.cursor = 'pointer';
+        const radio = document.createElement('input');
+        radio.type = 'radio';
+        radio.name = 'statType';
+        radio.value = st.key;
+        if (st.key === selectedStat) radio.checked = true;
+        radio.onchange = () => { selectedStat = st.key; renderGraph(); };
+        label.appendChild(radio);
+        label.appendChild(document.createTextNode(' ' + st.label));
+        radioWrap.appendChild(label);
+      });
+      modal.appendChild(radioWrap);
+
+      // Slider for time scale
+      const timeScales = [
+        { key: 'minute', label: 'Minutes', ms: 60 * 1000 },
+        { key: 'hour', label: 'Hours', ms: 3600 * 1000 },
+        { key: 'day', label: 'Days', ms: 24 * 3600 * 1000 },
+        { key: 'week', label: 'Weeks', ms: 7 * 24 * 3600 * 1000 },
+        { key: 'month', label: 'Months', ms: 30 * 24 * 3600 * 1000 },
+        { key: 'year', label: 'Years', ms: 365 * 24 * 3600 * 1000 }
+      ];
+      let selectedScale = 'minute';
+      const sliderWrap = document.createElement('div');
+      sliderWrap.style.display = 'flex';
+      sliderWrap.style.alignItems = 'center';
+      sliderWrap.style.gap = '1rem';
+      sliderWrap.style.marginBottom = '1rem';
+      const slider = document.createElement('input');
+      slider.type = 'range';
+      slider.min = 0;
+      slider.max = timeScales.length - 1;
+      slider.value = 0; // default to minutes
+      slider.oninput = () => {
+        selectedScale = timeScales[slider.value].key;
+        scaleLabel.textContent = timeScales[slider.value].label;
+        renderGraph();
+      };
+      const scaleLabel = document.createElement('span');
+      scaleLabel.textContent = timeScales[slider.value].label;
+      sliderWrap.appendChild(document.createTextNode('Time Scale:'));
+      sliderWrap.appendChild(slider);
+      sliderWrap.appendChild(scaleLabel);
+      modal.appendChild(sliderWrap);
+
+      // Canvas for graph
+      const canvas = document.createElement('canvas');
+      canvas.width = Math.floor(window.innerWidth * 0.7);
+      canvas.height = Math.floor(window.innerHeight * 0.55);
+      canvas.style.background = '#111';
+      canvas.style.borderRadius = '12px';
+      canvas.style.marginTop = '2rem';
+      modal.appendChild(canvas);
+
+      // Add digits and decimals dropdowns for filtering
+      let allEntries = Object.values(allProgress).flat();
+      const digitsSet = new Set();
+      const decimalsSet = new Set();
+      allEntries.forEach(entry => {
+        if (entry.digits !== undefined) digitsSet.add(entry.digits);
+        if (entry.decimals !== undefined) decimalsSet.add(entry.decimals);
+      });
+      const digitsDropdown = document.createElement('select');
+      digitsDropdown.style.margin = '0 1rem';
+      digitsDropdown.innerHTML = '<option value="all">All Digits</option>' +
+        Array.from(digitsSet).sort((a, b) => a - b).map(d => `<option value="${d}">${d} Digits</option>`).join('');
+      digitsDropdown.onchange = () => { selectedDigits = digitsDropdown.value; renderGraph(); };
+      modal.appendChild(digitsDropdown);
+      const decimalsDropdown = document.createElement('select');
+      decimalsDropdown.style.margin = '0 1rem';
+      decimalsDropdown.innerHTML = '<option value="all">All</option>' +
+        Array.from(decimalsSet).sort().map(d => `<option value="${d}">${d == 1 ? 'With Decimals' : 'No Decimals'}</option>`).join('');
+      decimalsDropdown.onchange = () => { selectedDecimals = decimalsDropdown.value; renderGraph(); };
+      modal.appendChild(decimalsDropdown);
+
+      function renderGraph() {
+        const ctx = canvas.getContext('2d');
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        let data = allProgress[selectedUser] || [];
+        if (selectedDigits !== 'all') data = data.filter(e => e.digits == selectedDigits);
+        if (selectedDecimals !== 'all') data = data.filter(e => e.decimals == selectedDecimals);
+        if (!data.length) {
+          ctx.fillStyle = '#fff';
+          ctx.font = '2rem Arial';
+          ctx.textAlign = 'center';
+          ctx.fillText('No Data', canvas.width / 2, canvas.height / 2);
+          return;
+        }
+        // Group data by selected time scale
+        const scale = timeScales.find(ts => ts.key === selectedScale);
+        const buckets = {};
+        data.forEach(entry => {
+          // Only count stepType 'correct' and 'incorrect' for steps, 'challenge-complete' for correct challenges
+          const bucket = Math.floor(entry.timestamp / scale.ms);
+          if (!buckets[bucket]) buckets[bucket] = { correct: 0, incorrect: 0, correctChallenges: 0, correctTimestamps: [], incorrectTimestamps: [] };
+          if (entry.stepType === 'correct') {
+            buckets[bucket].correct += 1;
+            buckets[bucket].correctTimestamps.push(entry.timestamp);
+          } else if (entry.stepType === 'incorrect') {
+            buckets[bucket].incorrect += 1;
+            buckets[bucket].incorrectTimestamps.push(entry.timestamp);
+          } else if (entry.stepType === 'challenge-complete') {
+            buckets[bucket].correctChallenges += 1;
+          }
+        });
+        // Prepare bar data (max and avg for each bucket)
+        const bucketKeys = Object.keys(buckets).sort((a, b) => a - b);
+        const barData = bucketKeys.map(bk => {
+          const b = buckets[bk];
+          let max = 0, avg = 0;
+          if (selectedStat === 'correctSteps') {
+            max = b.correct;
+            avg = b.correct;
+          } else if (selectedStat === 'incorrect') {
+            max = b.incorrect;
+            avg = b.incorrect;
+          } else if (selectedStat === 'totalSteps') {
+            max = b.correct + b.incorrect;
+            avg = max;
+          } else if (selectedStat === 'speed') {
+            // Calculate average time between correct steps in MINUTES
+            const ts = b.correctTimestamps.sort();
+            let intervals = [];
+            for (let i = 1; i < ts.length; i++) {
+              intervals.push((ts[i] - ts[i - 1]) / 60000); // ms to min
+            }
+            avg = intervals.length ? (intervals.reduce((a, b) => a + b, 0) / intervals.length) : 0;
+            max = intervals.length ? Math.max(...intervals) : 0;
+          } else if (selectedStat === 'combo') {
+            // Not bucketed, fallback to 0
+            max = 0;
+            avg = 0;
+          } else if (selectedStat === 'correct') {
+            max = b.correctChallenges;
+            avg = b.correctChallenges;
+          }
+          return { max, avg };
+        });
+        // Draw axes
+        const w = canvas.width, h = canvas.height;
+        ctx.strokeStyle = '#fff';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(60, h - 40); ctx.lineTo(w - 20, h - 40); // X axis
+        ctx.moveTo(60, h - 40); ctx.lineTo(60, 30); // Y axis
+        ctx.stroke();
+        // Y axis labels
+        ctx.fillStyle = '#fff';
+        ctx.font = 'bold 1.1rem Arial';
+        let maxY = Math.max(...barData.map(b => Math.max(b.max, b.avg)), 5);
+        for (let i = 0; i <= maxY; i += Math.ceil(maxY / 5)) {
+          const y = h - 40 - (h - 80) * (i / maxY);
+          ctx.fillText(i.toString(), 25, y + 5);
+        }
+        // X axis labels
+        ctx.font = '1rem Arial';
+        bucketKeys.forEach((bk, i) => {
+          const x = 60 + (w - 100) * (i / (bucketKeys.length));
+          let label = '';
+          const t = new Date(bk * scale.ms);
+          if (selectedScale === 'minute') label = t.getHours() + ':' + t.getMinutes().toString().padStart(2, '0');
+          else if (selectedScale === 'hour') label = t.getHours() + ':00';
+          else if (selectedScale === 'day') label = t.toLocaleDateString();
+          else if (selectedScale === 'week') label = 'W' + getWeekNumber(t);
+          else if (selectedScale === 'month') label = t.getFullYear() + '-' + (t.getMonth() + 1);
+          else if (selectedScale === 'year') label = t.getFullYear();
+          ctx.fillText(label, x + 10, h - 20);
+        });
+        // Draw bars (superimposed, never cross y-axis)
+        const barW = Math.max(10, (w - 100) / (bucketKeys.length * 1.5));
+        bucketKeys.forEach((bk, i) => {
+          const { max, avg } = barData[i];
+          const xBase = 60 + (w - 100) * (i / (bucketKeys.length));
+          // Draw max bar (orange) first
+          const yMax = h - 40 - (h - 80) * (max / maxY);
+          ctx.fillStyle = '#ff9800';
+          ctx.fillRect(xBase, yMax, barW, h - 40 - yMax);
+          // Draw avg bar (blue) on top, same x position, shorter if avg < max
+          const yAvg = h - 40 - (h - 80) * (avg / maxY);
+          ctx.fillStyle = '#0af';
+          ctx.fillRect(xBase, yAvg, barW, h - 40 - yAvg);
+        });
+        // Y axis label
+        ctx.save();
+        ctx.translate(20, h / 2 + 40);
+        ctx.rotate(-Math.PI / 2);
+        ctx.fillStyle = '#0af';
+        let statLabel = statTypes.find(s => s.key === selectedStat).label;
+        if (selectedStat === 'speed') statLabel = 'Speed (min)';
+        if (selectedStat === 'correct') statLabel = 'Correct Challenges';
+        ctx.fillText(statLabel, 0, 0);
+        ctx.restore();
+      }
+      window.renderGraph = renderGraph;
+      renderGraph();
+      document.body.appendChild(modal);
+    }
 
     document.addEventListener('DOMContentLoaded', () => {
       const hasSeenInstructions = localStorage.getItem('hasSeenInstructions');
@@ -1021,38 +1362,82 @@
       document.getElementById(pageId).style.display = 'block'; // Show the selected page
     }
 
-    function updateProgress(digitCount) {
+    function updateProgress(digitCount, isCorrect) {
       const hour = new Date().getHours();
       const digitKey = `${digitCount}-digits`;
 
-      if (!progressData[userName]) progressData[userName] = {};
-      if (!progressData[userName][digitKey]) progressData[userName][digitKey] = {};
-      if (!progressData[userName][digitKey][hour]) progressData[userName][digitKey][hour] = 0;
+      if (!progressData[digitKey]) progressData[digitKey] = {};
+      if (!progressData[digitKey][hour]) progressData[digitKey][hour] = { correct: 0, incorrect: 0 };
 
-      progressData[userName][digitKey][hour]++;
+      if (isCorrect) {
+        progressData[digitKey][hour].correct++;
+      } else {
+        progressData[digitKey][hour].incorrect++;
+        progressData[digitKey][hour].stars = Math.max(0, progressData[digitKey][hour].stars - 1); // Lose a star for every wrong move
+      }
+
       saveProgressToRegistry();
     }
 
     function playWinAnimation() {
       const body = document.body;
-      const board = document.getElementById('board');
+      const correctElement = document.createElement('div');
 
-      // Add rainbow animation to the sky
-      body.style.animation = 'rainbowSky 4s linear';
+      // Create a separate CORRECT element
+      correctElement.id = 'correctMessage';
+      correctElement.innerText = 'CORRECT';
+      correctElement.style.position = 'absolute';
+      correctElement.style.top = '10%';
+      correctElement.style.left = '50%';
+      correctElement.style.transform = 'translateX(-50%)';
+      correctElement.style.fontSize = '10rem'; // Bigger than the sum text
+      correctElement.style.color = '#0f0'; // Bright green
+      correctElement.style.animation = 'grow-and-fade 3s ease-in-out';
+      correctElement.style.zIndex = '100';
 
-      // Add green flash to the blackboard
-      board.style.transition = 'background-color 0.5s';
-      board.style.backgroundColor = 'lime';
+      document.body.appendChild(correctElement);
 
-      setTimeout(() => {
-        board.style.backgroundColor = '#001a1a'; // Reset to original color
-      }, 1000);
+      const style = document.createElement('style');
+      style.innerHTML = `
+            @keyframes grow-and-fade {
+                0% { transform: scale(0.5); opacity: 0; }
+                50% { transform: scale(1.5); opacity: 1; }
+                100% { transform: scale(2); opacity: 0; }
+            }
 
-      // Remove animation after 4 seconds
+            @keyframes rainbowSky {
+                0% { background: linear-gradient(to top, red, orange); }
+                25% { background: linear-gradient(to top, yellow, green); }
+                50% { background: linear-gradient(to top, blue, indigo); }
+                75% { background: linear-gradient(to top, violet, red); }
+                100% { background: linear-gradient(to top, red, orange); }
+            }
+        `;
+      document.head.appendChild(style);
+
+      body.style.animation = 'rainbowSky 3s linear';
+
       setTimeout(() => {
         body.style.animation = '';
-        generateNewChallenge(); // Transition to a new challenge
-      }, 4000);
+        correctElement.remove();
+        // --- RECORD PROGRESS FOR CHARTS ---
+        recordStepProgress({
+          digits: mDigits.filter(d => typeof d === 'number').length,
+          decimals: mDigits.includes('.') ? 1 : 0,
+          correct: wrongAttempts === 0 ? 1 : 0,
+          incorrect: wrongAttempts,
+          correctSteps,
+          totalSteps,
+          speed: (Date.now() - challengeStartTime) / 1000,
+          combo: currentCombo,
+          challengeType: mDigits.includes('.') ? 'decimal' : 'integer'
+        });
+        generateNewChallenge();
+        const ansElement = document.getElementById('ans');
+        if (ansElement) {
+          ansElement.focus();
+        }
+      }, 3000); // Celebration duration extended by 1 second
     }
 
     // Add rainbow animation keyframes
@@ -1067,6 +1452,40 @@
       }
     `;
     document.head.appendChild(style);
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const progressData = JSON.parse(localStorage.getItem('progressData')) || {};
+
+      function saveProgressToLocalStorage() {
+        localStorage.setItem('progressData', JSON.stringify(progressData));
+      }
+
+      function updateProgress(digitCount, isCorrect, timeTaken) {
+        const hour = new Date().getHours();
+        const minute = new Date().getMinutes();
+        const digitKey = `${digitCount}-digits`;
+
+        if (!progressData[digitKey]) progressData[digitKey] = {};
+        if (!progressData[digitKey][hour]) progressData[digitKey][hour] = { correct: 0, incorrect: 0, timeTaken: [], stars: 3 };
+
+        if (isCorrect) {
+          progressData[digitKey][hour].correct++;
+          progressData[digitKey][hour].timeTaken.push(timeTaken);
+        } else {
+          progressData[digitKey][hour].incorrect++;
+          progressData[digitKey][hour].stars = Math.max(0, progressData[digitKey][hour].stars - 1); // Lose a star for every wrong move
+        }
+
+        saveProgressToLocalStorage();
+      }
+    });
+
+    document.getElementById('aboutBtn').onclick = function () {
+      document.getElementById('aboutModal').style.display = 'block';
+    };
+    document.getElementById('closeAbout').onclick = function () {
+      document.getElementById('aboutModal').style.display = 'none';
+    };
   </script>
 </body>
 
