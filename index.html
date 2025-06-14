@@ -5,64 +5,241 @@
   <meta charset="UTF-8" />
   <title>Interactive Subtraction on Blackboard</title>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Shadows+Into+Light&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Gloria+Hallelujah&display=swap');
 
     body {
       margin: 0;
       padding: 0;
-      height: 100vh;
+      min-height: 100vh;
+      min-width: 100vw;
       display: flex;
       justify-content: center;
       align-items: center;
       background: linear-gradient(to top, skyblue, darkblue);
-      /* Sky blue to dark blue gradient */
-      font-family: 'Shadows Into Light', 'cursive';
-      padding: 1rem;
-      /* Add padding for smaller screens */
+      font-family: 'Gloria Hallelujah', 'cursive';
       box-sizing: border-box;
-      transform: scale(0.9);
-      transform-origin: top left;
+      /* Remove transform and transform-origin to avoid off-screen issues */
     }
 
     #board {
       background: #001a1a;
-      /* Very dark blackboard with a hint of green and blue */
       border: 8px solid #444;
       box-shadow: 0 0 20px #000;
-      padding: 1rem;
-      /* Adjust padding for responsiveness */
-      width: 90%;
-      /* Adjust width for responsiveness */
-      max-width: 60rem;
-      /* Maintain maximum width for larger screens */
-      margin: auto;
-      /* Center the board */
+      padding: 1.2rem 0.7rem 2.5rem 0.7rem;
+      /* Increased bottom padding for controls */
+      width: auto;
+      min-width: 600px;
+      max-width: 95vw;
+      margin: 0 auto;
       color: #afa;
       text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      /* Align from top instead of center */
+      box-sizing: border-box;
+      position: relative;
+      /* For absolute positioning of child elements */
+      min-height: 650px;
+      /* Increased minimum height to accommodate content */
+      height: auto;
+      /* Allow it to grow if needed */
     }
 
-    #board h1 {
-      font-size: 5rem;
-      /* Increase size by 80% */
-      font-weight: bold;
-      /* Make text bold */
+    /* Responsive menu bar at the top of the blackboard */
+    #menuBar {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      justify-content: center;
+      gap: 0.3rem;
+      /* Increased spacing between buttons */
+      width: 100%;
+      margin-top: 10px;
+      margin-bottom: 0.4rem;
+      flex-wrap: wrap;
+    }
+
+    #menuBar select,
+    #menuBar button {
+      font-family: Arial, sans-serif;
+      font-size: 1.12rem !important;
+      /* 60% larger than 0.7rem */
+      padding: 0.1rem 0.3rem;
+      /* Scaled up padding */
+      border-radius: 6px;
+      border: 2px solid #afa;
+      background: #222;
+      color: #afa;
+      min-width: 2.1rem;
+      /* 60% larger */
+      min-height: 1.6rem;
+      /* 60% larger */
+      margin: 0 0.08rem;
+      /* Increased spacing */
+      cursor: pointer;
+      transition: background 0.2s, color 0.2s;
+      box-sizing: border-box;
+      white-space: nowrap;
+    }
+
+    #digitCount {
+      font-size: 1.12rem !important;
+      /* 60% larger */
+      padding: 0.1rem 0.3rem !important;
+      height: auto;
+    }
+
+    #menuBar button,
+    #menuBar select {
+      font-size: 1.12rem !important;
+      /* 60% larger */
+      padding: 0.1rem 0.3rem;
+      min-height: 1.6rem;
+      height: auto;
+    }
+
+    #startButton {
+      font-size: 0.7rem !important;
+      padding: 0.07rem 0.2rem;
+      min-width: 1.3rem;
+      min-height: 1rem;
+      border: 2px solid #afa;
+      border-radius: 6px;
+      background: #222;
+      color: #afa;
+      box-sizing: border-box;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #step {
+      font-size: clamp(2rem, min(5rem, 10vw), 5rem) !important;
+      /* Responsive sizing to prevent wrapping */
+      color: #33f !important;
+      /* Lighter blue */
+      animation: pulse 1.5s infinite;
+      text-align: center;
+      width: 100%;
+      padding: 0.5rem 0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      position: absolute;
+      /* Position absolutely over the blackboard */
+      left: 0;
+      right: 0;
+      z-index: 10;
+      /* Ensure it's above other elements */
+      top: calc(100% - 120px);
+      /* Position further up from answer field and buttons */
+      transform: none;
+      /* Remove vertical centering */
+      pointer-events: none;
+      /* Allow clicking through to elements beneath */
+      margin: 0;
+    }
+
+    @media (max-width: 700px) {
+      #menuBar {
+        flex-wrap: wrap;
+        gap: 0.15rem;
+      }
+
+      #menuBar select,
+      #menuBar button {
+        font-size: 0.6rem;
+        padding: 0.04rem 0.08rem;
+        min-width: 1.1rem;
+        min-height: 1rem;
+      }
+
+      #digitCount {
+        font-size: 0.8rem !important;
+        padding: 0.08rem 0.18rem !important;
+        height: 1.5rem;
+      }
+
+      #startButton {
+        font-size: 0.8rem;
+        padding: 0.01rem 0.08rem;
+      }
+    }
+
+    /* Blackboard width for laptop and phone */
+    #board {
+      width: min(90vw, 60rem);
+      min-width: 600px;
+      max-width: 90vw;
+    }
+
+    @media (max-width: 700px) {
+      #board {
+        padding: 0.2rem;
+        max-width: 100vw;
+      }
+
+      #mainTitle {
+        font-size: clamp(1.2rem, 5vw, 2.5rem);
+        letter-spacing: -0.02em;
+        width: 100%;
+        max-width: 98%;
+      }
+
+      #step {
+        font-size: clamp(1.5rem, 8vw, 4rem) !important;
+        line-height: 1.2;
+        padding: 0.3rem;
+        /* Position remains absolute as defined in the main style */
+      }
+
+      .row {
+        font-size: 1.7rem;
+      }
+
+      .digit {
+        width: 1.1rem;
+        margin: 0 0.07rem;
+      }
+    }
+
+    /* Special handling for long messages */
+    #step[data-message="long"] {
+      font-size: clamp(1.8rem, 7vw, 3.5rem) !important;
+      white-space: normal;
+      line-height: 1.2;
+      /* Position remains absolute as defined in the main style */
+      max-width: 90%;
+      /* Prevent text from overflowing the blackboard */
+      left: 5%;
+      right: 5%;
     }
 
     #controls {
       display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-
-    #controls input,
-    #controls button {
-      margin: 0 0.5rem;
-      font-size: 2rem;
-      /* Increase controls size */
+      flex-direction: row;
+      gap: 0.3rem;
+      margin-bottom: 2rem;
+      /* Increased margin to create more space */
+      padding-bottom: 1rem;
+      /* Increased padding */
     }
 
     #controls input {
-      margin-bottom: 1rem;
+      margin-bottom: 0;
+      font-size: 1.2rem;
+      height: 1.7rem;
+      padding: 0.1rem 0.3rem;
+    }
+
+    #controls button {
+      font-size: 1.1rem;
+      height: 1.7rem;
+      padding: 0.1rem 0.5rem;
+      margin-left: 0.3rem;
+      min-width: 2.5rem;
     }
 
     .row {
@@ -70,20 +247,27 @@
       justify-content: center;
       /* Center the sum horizontally */
       font-family: monospace;
-      font-size: 5rem;
+      font-size: 3.2rem;
       /* Increase font size for better visibility */
+      margin: 0 0;
+      /* No vertical margin between rows */
+      padding: 0;
+      /* No padding */
       white-space: pre;
+      line-height: 0.8;
+      /* Even tighter line height to bring rows closer */
     }
 
     .digit {
       position: relative;
-      width: 2.4rem;
+      width: 1.8rem;
+      /* Increased width for digits */
       text-align: center;
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      margin: 0 0.5rem;
-      /* Add margin to separate digits */
+      margin: 0 0.3rem;
+      /* More horizontal spacing between digits */
     }
 
     /* Mask non-active digits */
@@ -100,15 +284,31 @@
     /* Highlight for active digits: bright yellow background */
     .highlight-top,
     .highlight-bot {
-      background: rgba(255, 255, 0, 0.8);
-      /* Slightly transparent yellow */
+      background: rgba(255, 255, 0, 0.9);
+      /* Bright yellow with slight transparency */
       color: #000;
-      border-radius: 4px;
-      padding: 0.2rem;
-      margin-left: -4px;
-      /* Extend highlight 4px to the left */
-      margin-right: -4px;
-      /* Extend highlight 4px to the right */
+      /* Black text for better contrast on yellow */
+      border-radius: 0;
+      /* No rounded corners for better connection */
+      padding: 0.1rem 0.7rem;
+      /* Less vertical padding, more horizontal padding */
+      margin-left: -16px;
+      /* Extend highlight 16px to the left */
+      margin-right: -16px;
+      /* Extend highlight 16px to the right */
+      position: relative;
+      z-index: 1;
+    }
+
+    /* Make highlights connect perfectly without overlapping issues */
+    .highlight-bot {
+      margin-top: -2px;
+      /* Negative margin to eliminate gap between highlights */
+    }
+
+    .highlight-top {
+      margin-bottom: -2px;
+      /* Negative margin to eliminate gap from bottom */
     }
 
     /* Subscript element (borrowed tens) in dark red */
@@ -123,27 +323,43 @@
     }
 
     .input-digit {
-      width: 6rem;
+      width: 3.2rem;
       /* Increase input box size */
-      font-size: 3rem;
+      font-size: 1.7rem;
       /* Increase font size */
       text-align: center;
-      margin: 0 0.5rem;
+      padding: 0.1rem 0.2rem;
       background: #3a3a3a;
       border: 2px solid #afa;
       color: #afa;
       font-family: 'Shadows Into Light', 'cursive';
       caret-color: #afa;
+      margin: 0;
+      flex-grow: 0;
+      border-radius: 0;
     }
 
     /* Update blue writing to be larger, brighter, and animated */
     #step {
-      font-size: 4rem;
-      /* Increase size */
-      color: #00f;
-      /* Make it brighter */
+      font-size: clamp(2rem, min(4.5rem, 9vw), 4.5rem) !important;
+      /* Responsive sizing */
+      color: #33f !important;
+      /* Lighter blue */
       animation: pulse 1.5s infinite;
-      /* Add shrinking and growing animation */
+      /* Add subtle shrinking and growing animation */
+      text-align: center;
+      width: 100%;
+      margin: 20px auto 10px auto;
+      /* Center with proper spacing above/below */
+      padding: 0;
+      /* No padding */
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      /* Prevent text from overflowing */
+      display: block;
+      background: transparent;
+      /* No background */
     }
 
     /* Add scribbly hand-drawn font for all text */
@@ -152,7 +368,7 @@
     .digit,
     .input-digit,
     button {
-      font-family: 'Shadows Into Light', 'cursive';
+      font-family: 'Gloria Hallelujah', 'cursive';
       /* Hand-drawn font */
     }
 
@@ -173,8 +389,12 @@
 
     /* Adjusting the layout to move the answer line directly below the bottom line of the sum */
     #results {
-      margin-top: 1rem;
-      /* Ensure spacing between the bottom line and the answer line */
+      margin-top: 0;
+      /* No margin - connect directly to bottom line */
+      min-height: auto;
+      /* Auto height */
+      padding: 0;
+      /* No padding */
     }
 
     /* Add spacing for negative signs */
@@ -198,31 +418,52 @@
       justify-content: center;
       align-items: center;
       flex-wrap: wrap;
-      gap: 1rem;
-      /* Add spacing between elements */
+      width: 100%;
+      margin: 1rem auto 0.5rem;
+      /* Adjusted margin for bottom position */
       z-index: 10;
       /* Ensure buttons are above other elements */
       position: relative;
       /* Ensure z-index takes effect */
+      min-height: 60px;
+      /* Fixed height to prevent layout shifts */
+      padding-top: 10px;
+      /* Extra padding at the top */
+      padding-bottom: 10px;
+      /* Add padding at the bottom */
     }
 
     #inputArea input {
-      flex: 1;
-      max-width: 10rem;
-      /* Ensure input box is not too wide */
+      flex: 0 0 auto;
+      /* Don't grow or shrink */
+      width: 3rem;
+      /* Make it narrower (just 2 chars wide) */
+      height: 2.5rem;
+      /* Match the height of buttons */
+      text-align: center;
+      /* Center text in the input box */
+      font-size: 1.5rem;
+      /* Larger text for better visibility */
+      padding: 0;
+      /* Remove padding to match button size */
     }
 
     #inputArea button {
       flex: 0 0 auto;
-      font-size: 2rem;
-      /* Make buttons larger */
+      font-size: calc(1.6rem - 2px);
+      /* 20% smaller than 2rem minus 2px */
       padding: 0.5rem 1rem;
-      /* Add padding for better clickability */
-      background: #444;
-      color: #afa;
-      border: 2px solid #afa;
-      border-radius: 8px;
+      background: #444 !important;
+      /* Ensure this style takes precedence */
+      color: #afa !important;
+      border: 2px solid #afa !important;
+      border-radius: 0;
       cursor: pointer;
+      min-width: 2.5rem;
+      min-height: 2.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
 
     #inputArea button:hover {
@@ -238,47 +479,9 @@
     }
 
     #board {
-      padding: 1rem;
+      padding: 0.2rem;
       /* Adjust padding for responsiveness */
       box-sizing: border-box;
-    }
-
-    #challengeOptions {
-      position: absolute;
-      top: 1rem;
-      right: 1rem;
-      background: #333;
-      color: #fff;
-      border: 3px solid #fff;
-      border-radius: 12px;
-      padding: 1rem;
-      display: flex;
-      flex-direction: column;
-      z-index: 102;
-    }
-
-    #challengeOptions select {
-      margin-bottom: 1rem;
-      font-size: 2rem;
-      background: #444;
-      color: #fff;
-      border: 2px solid #fff;
-      border-radius: 8px;
-      padding: 0.5rem;
-    }
-
-    #challengeOptions button {
-      font-size: 2rem;
-      padding: 0.5rem 1rem;
-      background: #444;
-      color: #fff;
-      border: 2px solid #fff;
-      border-radius: 8px;
-      cursor: pointer;
-    }
-
-    #challengeOptions button:hover {
-      background: #555;
     }
 
     #numberTypeToggle {
@@ -371,41 +574,48 @@
     }
 
     /* Modal Styles */
-    #progressChart {
+    #progressChart,
+    #aboutModal,
+    #userModal {
       position: fixed;
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
       background: #333;
       color: #fff;
-      border: 3px solid #fff;
+      border: 3px solid #afa;
       border-radius: 12px;
       padding: 2rem;
       z-index: 9999;
-      max-width: 90%;
-      max-height: 80%;
+      width: 80%;
+      max-width: 900px;
+      max-height: 85%;
       overflow-y: auto;
       box-shadow: 0 0 20px rgba(0, 0, 0, 0.8);
+      font-family: Arial, sans-serif;
+      display: none;
+      /* Hidden by default */
     }
 
     /* Instructions Styles */
     #instructions {
       display: none;
       font-family: Arial, sans-serif;
-      font-size: 2rem;
+      font-size: 1.5rem;
       position: fixed;
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
-      background: rgba(0, 0, 0, 0.9);
+      background: rgba(0, 0, 0, 0.95);
       color: #fff;
-      border: 3px solid #fff;
+      border: 3px solid #afa;
       border-radius: 12px;
       padding: 2rem;
-      z-index: 105;
-      max-width: 90%;
+      z-index: 9999;
+      width: 80%;
+      max-width: 900px;
       overflow-y: auto;
-      max-height: 80%;
+      max-height: 85%;
     }
 
     .instruction-page {
@@ -420,16 +630,21 @@
     /* Updated button styles with a plain sans-serif font */
     button {
       font-family: Arial, sans-serif;
-      font-size: 2rem;
+      font-size: 0.65rem;
+      /* Much smaller base size */
       color: #afa;
       background: none;
       border: none;
       cursor: pointer;
-      text-decoration: underline;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
     }
 
     button:hover {
       color: #fff;
+      text-decoration: none;
     }
 
     /* Added keyframes for grow-from-point animation */
@@ -466,103 +681,439 @@
         opacity: 1;
       }
     }
+
+    /* Rainbow animation for the title */
+    @keyframes rainbow {
+      0% {
+        background-position: 0% 50%;
+      }
+
+      100% {
+        background-position: 100% 50%;
+      }
+    }
+
+    /* Title styling */
+    #mainTitle {
+      font-size: clamp(1.8rem, 7vw, 4rem);
+      font-weight: bold;
+      width: 100%;
+      margin: 0.2rem auto 0.4rem auto;
+      text-align: center;
+      background: linear-gradient(90deg, red, orange, yellow, green, blue, indigo, violet);
+      background-size: 200% auto;
+      background-clip: text;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      color: transparent;
+      letter-spacing: 0;
+      border-radius: 0.5rem;
+      padding: 0.1rem 0;
+      user-select: none;
+      animation: rainbowText 3s linear infinite;
+      white-space: nowrap;
+      overflow: visible;
+      display: block;
+      max-width: 100%;
+    }
+
+    @keyframes rainbowText {
+      0% {
+        background-position: 0% 50%;
+      }
+
+      100% {
+        background-position: 100% 50%;
+      }
+    }
+
+    /* Style for the minus sign */
+    .minus-sign {
+      color: white;
+      font-size: 4rem;
+      /* Increased size for better visibility */
+      font-weight: bold;
+      margin-right: 0.8rem;
+      /* Increased space */
+      display: flex;
+      align-items: center;
+      height: 100%;
+      width: 1.5rem;
+      /* Fixed width to ensure consistent alignment */
+    }
+
+    /* Style for the container holding minus sign and row */
+    .row-container {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      margin: 0;
+      /* No vertical spacing between rows */
+      padding: 0;
+      /* No padding */
+    }
+
+    /* Problem container with fixed height to prevent blackboard resizing */
+    #problemContainer {
+      position: relative;
+      width: 100%;
+      height: auto;
+      /* Auto height */
+      min-height: 300px;
+      /* Reduced minimum height */
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      /* Align from top instead of center */
+      margin: 0;
+      padding: 0;
+      overflow: visible;
+      /* Allow step to overflow */
+    }
+
+    #problem,
+    #results {
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+    }
+
+    /* Row container styles for precise alignment */
+    .row-container {
+      margin: 0;
+      padding: 0;
+      line-height: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+    }
+
+    #problem {
+      width: 100%;
+      position: relative;
+      z-index: 1;
+      /* Lower than step */
+    }
   </style>
 </head>
 
 <body>
   <div id="board">
-    <h1>Subtraction Central!</h1>
+    <div id="menuBar">
+      <select id="digitCount">
+        <option value="1">1 Digit</option>
+        <option value="2">2 Digits</option>
+        <option value="3">3 Digits</option>
+        <option value="4">4 Digits</option>
+        <option value="5">5 Digits</option>
+        <option value="6">6 Digits</option>
+        <option value="7">7 Digits</option>
+        <option value="8">8 Digits</option>
+        <option value="9">9 Digits</option>
+        <option value="10">10 Digits</option>
+      </select>
+      <select id="decimalPlaces" title="Decimal Places">
+        <option value="0" selected>0 dp</option>
+        <option value="1">1 dp</option>
+        <option value="2">2 dp</option>
+        <option value="3">3 dp</option>
+        <option value="4">4 dp</option>
+        <option value="5">5 dp</option>
+        <option value="6">6 dp</option>
+        <option value="7">7 dp</option>
+        <option value="8">8 dp</option>
+        <option value="9">9 dp</option>
+      </select>
+      <button id="generateChallenge">New Round</button> <button id="numberTypeToggle">Only Positive</button>
+      <button id="viewProgress">Stats</button>
+      <button id="userManageBtn">User</button>
+      <button id="tutorial">Instructions</button>
+      <button id="aboutBtn">About</button>
+    </div>
+    <h1 id="mainTitle">Subtraction Central!</h1>
     <div id="controls">
       <input type="text" id="minuend" placeholder="Top Number" />
+      <span style="color: #afa; font-size: 1rem; margin: 0 0.5rem;">take away</span>
       <input type="text" id="subtrahend" placeholder="Bottom Number" />
-      <button id="startButton">Start</button>
+      <button id="startButton">Go!</button>
     </div>
-    <div id="problem"></div>
-    <div id="step"></div>
+    <div id="problemContainer">
+      <div id="problem"></div>
+      <div id="results"></div>
+      <div id="step"></div>
+    </div>
     <div id="inputArea"></div>
-    <div id="results"></div>
   </div>
-  <div id="challengeOptions" style="position: relative;">
-    <select id="digitCount">
-      <option value="1">1 Digit</option>
-      <option value="2">2 Digits</option>
-      <option value="3">3 Digits</option>
-      <option value="4">4 Digits</option>
-      <option value="5">5 Digits</option>
-      <option value="6">6 Digits</option>
-      <option value="7">7 Digits</option>
-      <option value="8">8 Digits</option>
-      <option value="9">9 Digits</option>
-      <option value="10">10 Digits</option>
-    </select>
-    <button id="generateChallenge">New Challenge</button>
-    <button id="numberTypeToggle">Only Positive</button>
-    <button id="includeDecimal">Toggle Decimal</button>
-    <button id="enterName">Enter Name</button>
-    <button id="viewProgress">View Progress</button>
-    <button id="tutorial">Tutorial</button>
-  </div>
-
-  <div id="instructions" style="display: none; font-family: Arial, sans-serif; font-size: 2rem;">
+  <div id="instructions" style="display: none; font-family: Arial, sans-serif; font-size: 1.5rem;">
+    <span id="closeInstructions"
+      style="position:absolute; top:10px; right:16px; font-size:2rem; cursor:pointer; color:#fff;">&times;</span>
     <div id="page1" class="instruction-page">
-      <h1 style="font-size: 3rem;">Welcome to Subtraction Central!</h1>
-      <p>Click <strong>Generate Challenge</strong> to start a fun subtraction problem.</p>
-      <p>Choose the number of digits for harder problems.</p>
-      <button onclick="showPage('page2')">Next</button>
+      <h1 style="font-size: 2.5rem; color: #afa; text-align: center;">Welcome to Subtraction Central!</h1>
+      <p>This is a fun game to help you practice subtraction!</p>
+      <p>Click <strong>New Round</strong> to start a new subtraction problem.</p>
+      <p>You can choose how many digits you want to practice with.</p>
+      <div style="text-align: center; margin-top: 20px;">
+        <button onclick="showPage('page2')"
+          style="font-size: 1.5rem; padding: 0.5rem 1rem; background: #444; color: #afa; border: 2px solid #afa; border-radius: 8px; cursor: pointer;">Next</button>
+      </div>
     </div>
 
     <div id="page2" class="instruction-page" style="display: none;">
-      <h1 style="font-size: 3rem;">Game Controls</h1>
-      <p><strong>Generate Challenge:</strong> Get a new subtraction problem.</p>
-      <p><strong>Borrow:</strong> Use this if the top number is smaller than the bottom number in a column.</p>
-      <p><strong>Toggle Decimal:</strong> Add or remove decimals for harder problems.</p>
-      <button onclick="showPage('page3')">Next</button>
+      <h1 style="font-size: 2.5rem; color: #afa; text-align: center;">How to Play</h1>
+      <p>You'll see two numbers - one on top and one on the bottom.</p>
+      <p>You need to subtract the bottom number from the top number, one column at a time.</p>
+      <p>Type your answer in the box and press <strong>ENTER</strong> or click <strong>OK</strong>.</p>
+      <div style="text-align: center; margin-top: 20px;">
+        <button onclick="showPage('page3')"
+          style="font-size: 1.5rem; padding: 0.5rem 1rem; background: #444; color: #afa; border: 2px solid #afa; border-radius: 8px; cursor: pointer;">Next</button>
+      </div>
     </div>
 
     <div id="page3" class="instruction-page" style="display: none;">
-      <h1 style="font-size: 3rem;">Have Fun!</h1>
-      <p>Subtraction is fun and easy! Keep practicing and challenge yourself.</p>
-      <button onclick="hideInstructions()">GO!</button>
+      <h1 style="font-size: 2.5rem; color: #afa; text-align: center;">Borrowing</h1>
+      <p>If the top number is smaller than the bottom number in a column, you need to <strong>borrow</strong>.</p>
+      <p>Press the <strong>B</strong> key or click the <strong>Borrow</strong> button.</p>
+      <p>Then click on the digit you want to borrow from (usually the digit to the left).</p>
+      <div style="text-align: center; margin-top: 20px;">
+        <button onclick="showPage('page4')"
+          style="font-size: 1.5rem; padding: 0.5rem 1rem; background: #444; color: #afa; border: 2px solid #afa; border-radius: 8px; cursor: pointer;">Next</button>
+      </div>
+    </div>
+
+    <div id="page4" class="instruction-page" style="display: none;">
+      <h1 style="font-size: 2.5rem; color: #afa; text-align: center;">Multiple Zeros</h1>
+      <p>Sometimes you might see zeros in the top number when you need to borrow.</p>
+      <p>If you need to borrow from a zero, the zero becomes a 9, and you keep borrowing from the next digit.</p>
+      <p>The computer will help you figure this out!</p>
+      <div style="text-align: center; margin-top: 20px;">
+        <button onclick="showPage('page5')"
+          style="font-size: 1.5rem; padding: 0.5rem 1rem; background: #444; color: #afa; border: 2px solid #afa; border-radius: 8px; cursor: pointer;">Next</button>
+      </div>
+    </div>
+
+    <div id="page5" class="instruction-page" style="display: none;">
+      <h1 style="font-size: 2.5rem; color: #afa; text-align: center;">Game Options</h1>
+      <p><strong>Digits:</strong> Choose how many digits you want to practice with (1-10).</p>
+      <p><strong>Decimal Places:</strong> Choose if you want to practice with decimal points (0-9).</p>
+      <p><strong>Only Positive/Only Negative/Mixed:</strong> Choose what kind of numbers you want to practice with.</p>
+      <div style="text-align: center; margin-top: 20px;">
+        <button onclick="showPage('page6')"
+          style="font-size: 1.5rem; padding: 0.5rem 1rem; background: #444; color: #afa; border: 2px solid #afa; border-radius: 8px; cursor: pointer;">Next</button>
+      </div>
+    </div>
+
+    <div id="page6" class="instruction-page" style="display: none;">
+      <h1 style="font-size: 2.5rem; color: #afa; text-align: center;">Keyboard Shortcuts</h1>
+      <p>Press <strong>ENTER</strong> to check your answer.</p>
+      <p>Press <strong>B</strong> to start borrowing.</p>
+      <p>The answer box will always be ready for you to type in your answer.</p>
+      <div style="text-align: center; margin-top: 20px;">
+        <button onclick="showPage('page7')"
+          style="font-size: 1.5rem; padding: 0.5rem 1rem; background: #444; color: #afa; border: 2px solid #afa; border-radius: 8px; cursor: pointer;">Next</button>
+      </div>
+    </div>
+
+    <div id="page7" class="instruction-page" style="display: none;">
+      <h1 style="font-size: 2.5rem; color: #afa; text-align: center;">Stats and Users</h1>
+      <p>Click <strong>Stats</strong> to see how well you're doing.</p>
+      <p>Click <strong>User</strong> to create a new user or switch users.</p>
+      <p>Your progress is saved so you can see how you improve over time!</p>
+      <div style="text-align: center; margin-top: 20px;">
+        <button onclick="showPage('page8')"
+          style="font-size: 1.5rem; padding: 0.5rem 1rem; background: #444; color: #afa; border: 2px solid #afa; border-radius: 8px; cursor: pointer;">Next</button>
+      </div>
+    </div>
+
+    <div id="page8" class="instruction-page" style="display: none;">
+      <h1 style="font-size: 2.5rem; color: #afa; text-align: center;">About This Game</h1>
+      <p>This game was created by James Mulvale for his child Ozzie who was learning subtraction.</p>
+      <p>You can email <a href="mailto:james.mulvale@gmail.com" style="color: #afa;">james.mulvale@gmail.com</a> with
+        any questions or suggestions!</p>
+      <div style="text-align: center; margin-top: 20px;">
+        <button onclick="hideInstructions()"
+          style="font-size: 1.5rem; padding: 0.5rem 1rem; background: #444; color: #afa; border: 2px solid #afa; border-radius: 8px; cursor: pointer;">Let's
+          Go!</button>
+      </div>
     </div>
   </div>
-
-  <button id="aboutBtn"
-    style="position:fixed; bottom:20px; right:20px; z-index:10000; background:#222; color:#afa; border:2px solid #afa; border-radius:8px; font-size:1.2rem; padding:0.5rem 1.2rem; cursor:pointer;">About</button>
   <div id="aboutModal"
-    style="display:none; position:fixed; bottom:0; right:0; left:auto; top:auto; margin:2rem; z-index:10001; background:#222; color:#fff; border:3px solid #fff; border-radius:12px; padding:2rem; max-width:350px; box-shadow:0 0 20px #000;">
+    style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); z-index:9999; background:#222; color:#fff; border:3px solid #afa; border-radius:12px; padding:2rem; width:80%; max-width:700px; box-shadow:0 0 20px #000; text-align:center; font-family: Arial, sans-serif;">
     <span id="closeAbout"
       style="position:absolute; top:10px; right:16px; font-size:2rem; cursor:pointer; color:#fff;">&times;</span>
-    <div style="font-size:1.2rem; line-height:1.6;">
+    <div style="font-size:1.5rem; line-height:1.6;">
+      <h2 style="color:#afa; margin-bottom:1.5rem;">About Subtraction Central</h2>
       Designed and built by <b>James Mulvale</b> for his kid, Ozzie who was a bit stuck with his subtractions.<br><br>
       I hope you find it fun and useful.<br><br>
       Bugs/coffee donations: <a href="mailto:james.mulvale@gmail.com" style="color:#afa;">james.mulvale@gmail.com</a> :D
     </div>
   </div>
+  <div id="userModal"
+    style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); z-index:9999; background:#222; color:#fff; border:3px solid #afa; border-radius:12px; padding:2rem; min-width:300px; width:60%; max-width:600px; box-shadow:0 0 20px #000; font-family: Arial, sans-serif;">
+    <span id="closeUserModal"
+      style="position:absolute; top:10px; right:16px; font-size:2rem; cursor:pointer; color:#fff;">&times;</span>
+    <h2 style="margin-top:0; font-size:2rem; text-align:center;">User Management</h2>
+    <div id="currentUserDisplay" style="margin:1rem 0; font-size:1.5rem; text-align:center;"></div>
+    <div style="display:flex; flex-direction:column; gap:1rem; margin-top:2rem;">
+      <button id="newUserBtn"
+        style="font-size:1.5rem; padding:0.5rem; background:#444; color:#afa; border:2px solid #afa; border-radius:8px; cursor:pointer;">Create
+        New User</button>
+      <div id="userListContainer" style="max-height:300px; overflow-y:auto; margin-top:1rem;">
+        <h3 style="margin-bottom:0.5rem; font-size:1.5rem;">Select User:</h3>
+        <div id="userList" style="display:flex; flex-direction:column; gap:0.5rem;"></div>
+      </div>
+    </div>
+  </div>
+  <script>    document.addEventListener('DOMContentLoaded', () => {
+      // Set default number type to positive
+      numberType = 'positive';
+      const typeToggle = document.getElementById('numberTypeToggle');
+      if (typeToggle) {
+        typeToggle.innerText = 'Only Positive';
+      }
 
-  <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      document.getElementById('startButton').addEventListener('click', startSubtraction);
-      document.addEventListener('keydown', (event) => {
-        if (event.key === 'Enter') {
-          const idx = positions[col];
-          check(idx); // Trigger OK button functionality
+      // Primary button functionality
+      const startButton = document.getElementById('startButton');
+      if (startButton) {
+        startButton.addEventListener('click', startSubtraction);
+      }      // New Round button
+      const generateChallengeBtn = document.getElementById('generateChallenge');
+      if (generateChallengeBtn) {
+        generateChallengeBtn.addEventListener('click', generateNewChallengeHandler);
+        // Auto-generate first problem when page loads
+        setTimeout(() => {
+          generateChallengeBtn.click();
+
+          // Ensure focus is on the answer box after first problem loads
           setTimeout(() => {
             const ansElement = document.getElementById('ans');
             if (ansElement) {
-              ansElement.focus(); // Keep the text field focused
+              ansElement.focus();
             }
-          }, 100);
-        } else if (event.key.toLowerCase() === 'b') {
-          mode = 'selectSource';
-          document.getElementById('step').innerText = 'Click digit to BORROW FROM';
+          }, 600);
+        }, 500);
+      }
+
+      // Number type toggle button
+      const numberTypeToggleBtn = document.getElementById('numberTypeToggle');
+      if (numberTypeToggleBtn) {
+        numberTypeToggleBtn.addEventListener('click', function () {
+          if (numberType === 'positive') {
+            numberType = 'negative';
+            this.innerText = 'Only Negative';
+          } else if (numberType === 'negative') {
+            numberType = 'mixed';
+            this.innerText = 'Mixed';
+          } else {
+            numberType = 'positive';
+            this.innerText = 'Only Positive';
+          }
+        });
+      }
+
+      // Decimal toggle button
+      const decimalPlacesSelect = document.getElementById('decimalPlaces');
+      if (decimalPlacesSelect) {
+        decimalPlacesSelect.addEventListener('change', function () {
+          const dp = parseInt(this.value, 10);
+          if (dp === 0) {
+            this.style.fontWeight = 'normal';
+          } else {
+            this.style.fontWeight = 'bold';
+          }
+        });
+      }
+
+      // Digit count change
+      const digitCountSelect = document.getElementById('digitCount');
+      if (digitCountSelect) {
+        digitCountSelect.addEventListener('change', function () {
+          if (generateChallengeBtn) {
+            generateChallengeBtn.click();
+          }
+        });
+      }      // Stats button
+      const viewProgressBtn = document.getElementById('viewProgress');
+      if (viewProgressBtn) {
+        viewProgressBtn.addEventListener('click', function () {
+          // Create a new modal each time to ensure it's fresh
+          showProgressModal();
+        });
+      }
+
+      // User button
+      const userManageBtn = document.getElementById('userManageBtn');
+      if (userManageBtn) {
+        userManageBtn.addEventListener('click', function () {
+          const userModal = document.getElementById('userModal');
+          if (userModal) {
+            userModal.style.display = 'block';
+            populateUserList();
+          }
+        });
+      }
+
+      // About button
+      const aboutBtn = document.getElementById('aboutBtn');
+      if (aboutBtn) {
+        aboutBtn.addEventListener('click', function () {
+          const aboutModal = document.getElementById('aboutModal');
+          if (aboutModal) {
+            aboutModal.style.display = 'block';
+          }
+        });
+      }
+
+      // Tutorial/Instructions button
+      const tutorialBtn = document.getElementById('tutorial');
+      if (tutorialBtn) {
+        tutorialBtn.addEventListener('click', () => {
+          showInstructions();
+        });
+      }
+
+      // Add keyboard shortcuts      document.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter') {
+        event.preventDefault(); // Prevent default form submission
+        if (col >= 0) { // Make sure we have a column to check
+          const ansElement = document.getElementById('ans');
+
+          // Only check if there's actually input with digits
+          if (ansElement && ansElement.value && ansElement.value.trim() !== '' && /\d/.test(ansElement.value)) {
+            const idx = positions[col];
+            check(idx); // Trigger OK button functionality
+
+            // Focus immediately and clear the input
+            setTimeout(() => {
+              if (ansElement) {
+                ansElement.focus(); // Keep the text field focused
+                ansElement.value = ''; // Clear the input for next entry
+              }
+            }, 10); // Use a shorter timeout for more responsive feel
+          }
         }
-      });
+      } else if (event.key.toLowerCase() === 'b') {
+        event.preventDefault(); // Prevent default
+        // Find and click the borrow button
+        const borrowBtn = document.getElementById('borrowBtn');
+
+        if (borrowBtn) {
+          borrowBtn.click();
+        } else {
+          // Fallback if button isn't found
+          mode = 'selectSource';
+          setStepText('Click digit to BORROW FROM');
+        }
+      }
     });
 
     let mDigits = [], sDigits = [], workDigits = [], resultDigits = [], positions = [];
-    let col = 0, mode = 'compute', borrowSrc = null;
-
-    // --- INTEGRATE PROGRESS TRACKING INTO GAME LOGIC ---
+    let col = 0, mode = 'compute', borrowSrc = null;    // --- INTEGRATE PROGRESS TRACKING INTO GAME LOGIC ---
     // Add these variables at the top of the script (after let col = 0, ...):
     let challengeStartTime = 0;
     let wrongAttempts = 0;
@@ -570,6 +1121,11 @@
     let totalSteps = 0;
     let currentCombo = 0;
     let lastCorrectTimestamp = 0;
+    let userName = localStorage.getItem('userName') || '';
+    let allProgress = {};
+    try {
+      allProgress = JSON.parse(localStorage.getItem('allProgress')) || {};
+    } catch (e) { allProgress = {}; }
 
     // In startSubtraction, reset tracking variables and start timer
     function startSubtraction() {
@@ -600,16 +1156,36 @@
 
     // In check(idx), increment totalSteps and track correct/incorrect
     function check(idx) {
-      totalSteps++;
       const v = document.getElementById('ans').value;
+
+      // CRITICAL: Only proceed if there's actually a digit in the input
+      if (!v || v.trim() === '' || !/\d/.test(v)) {
+        // Don't show "Try Again" for empty input - just focus and return
+        const ansElement = document.getElementById('ans');
+        if (ansElement) {
+          ansElement.focus();
+        }
+        return;
+      }
+
+      // Only increment steps when we have valid digit input
+      totalSteps++;
+
       if (!/^-?\d+(\.\d+)?$/.test(v)) {
-        document.getElementById('step').innerText = 'Invalid input, try again!';
+        // Only show "Try again" for invalid format if we actually have digits
+        setStepText('Try again!');
+        setTimeout(() => {
+          const ansElement = document.getElementById('ans');
+          if (ansElement) {
+            ansElement.focus();
+            ansElement.value = '';
+          }
+        }, 50);
         return;
       }
       const numV = parseFloat(v);
       const expectedResult = workDigits[idx] - sDigits[idx];
-      let isCorrect = false;
-      if (numV === expectedResult) {
+      let isCorrect = false; if (numV === expectedResult) {
         correctSteps++;
         isCorrect = true;
         // Combo logic
@@ -619,34 +1195,65 @@
           currentCombo = 1;
         }
         lastCorrectTimestamp = Date.now();
+
+        // Show that the answer was correct
+        setStepText('Correct!');
+
         resultDigits[idx] = numV; // Write the answer to the blackboard
         render(); // Ensure the answer row is updated
+
         // FIX: Ensure column only decrements once
         if (mode === 'compute') {
           col--;
         }
         mode = 'compute';
-        if (col < 0) {
-          playWinAnimation(); // Trigger win animation when challenge is completed
-        } else {
-          nextStep();
-        }
+
+        // Give user a moment to see "Correct!" before moving on
+        setTimeout(() => {
+          if (col < 0) {
+            playWinAnimation(); // Trigger win animation when challenge is completed
+          } else {
+            // Clear the input value first, then move to next step
+            const ansElement = document.getElementById('ans');
+            if (ansElement) {
+              ansElement.value = '';
+            }
+            nextStep();
+          }
+        }, 700); // Longer delay for better user experience
       } else {
+        // Only show "Try Again" if we actually have an incorrect answer with digits
         wrongAttempts++;
         currentCombo = 0;
-        document.getElementById('step').innerText = 'Try Again';
+
+        // Double-check that we have actual digit input before showing "Try Again"
+        if (v && v.trim() !== '' && /\d/.test(v)) {
+          setStepText('Try Again');
+        }
+
+        // Ensure focus remains on answer input
+        setTimeout(() => {
+          const ansElement = document.getElementById('ans');
+          if (ansElement) {
+            ansElement.focus(); ansElement.value = '';
+          }
+        }, 10);
       }
-      // --- LOG STEP PROGRESS ---
-      recordStepProgress({
-        digits: mDigits.filter(d => typeof d === 'number').length,
-        decimals: mDigits.includes('.') ? 1 : 0,
-        correct: isCorrect ? 1 : 0,
-        incorrect: isCorrect ? 0 : 1,
-        stepType: isCorrect ? 'correct' : 'incorrect',
-        speed: (Date.now() - challengeStartTime) / 1000,
-        combo: currentCombo,
-        challengeType: mDigits.includes('.') ? 'decimal' : 'integer'
-      });
+
+      // --- LOG STEP PROGRESS --- 
+      // Only record progress if we actually processed input with digits
+      if (v && v.trim() !== '' && /\d/.test(v)) {
+        recordStepProgress({
+          digits: mDigits.filter(d => typeof d === 'number').length,
+          decimals: mDigits.includes('.') ? 1 : 0,
+          correct: isCorrect ? 1 : 0,
+          incorrect: isCorrect ? 0 : 1,
+          stepType: isCorrect ? 'correct' : 'incorrect',
+          speed: (Date.now() - challengeStartTime) / 1000,
+          combo: currentCombo,
+          challengeType: mDigits.includes('.') ? 'decimal' : 'integer'
+        });
+      }
     }
 
     function padNums(a, b) {
@@ -673,70 +1280,94 @@
       stepText.style.fontWeight = 'bold'; /* Keep text bold */
       stepText.style.color = '#00f'; /* Ensure blue color */
       stepText.innerText = content;
-    }
-
-    function nextStep() {
+    } function nextStep() {
       if (mode !== 'compute') return; // Prevent premature question updates
 
-      // Remove auto-solve for 0-0 columns
-      /*
-      if (col >= 0) {
-        const idx0 = positions[col];
-        if (workDigits[idx0] === 0 && sDigits[idx0] === 0) {
-          if (col === 0) {
-            // Automatically add the result for 0+0 in the final leftmost column
-            resultDigits[idx0] = 0;
-            col--;
-            render();
-            document.getElementById('step').innerText = 'Correct - click for a new challenge';
-            document.getElementById('step').onclick = () => {
-              document.getElementById('generateChallenge').click();
-            };
-            return;
-          }
-          render();
-          return;
-        }
-      }
-      */
+      // IMPORTANT: Never auto-advance or auto-solve columns
+      // All progression must be based on user input with digits
 
       const area = document.getElementById('inputArea');
       area.innerHTML = '';
       if (col < 0) {
-        document.getElementById('step').innerText = 'Correct - click for a new challenge';
+        setStepText('Correct - click for a new challenge');
         document.getElementById('step').onclick = () => {
           document.getElementById('generateChallenge').click();
-        };
-        return;
+        }; return;
       }
 
       const idx = positions[col];
       const t = workDigits[idx], b = sDigits[idx];
-      document.getElementById('step').innerText = `What is ${t} - ${b}?`;
+      setStepText(`What is ${t} - ${b}?`);
+
+      const btnContainer = document.createElement('div');
+      btnContainer.style.display = 'flex';
+      btnContainer.style.alignItems = 'center';
+      btnContainer.style.justifyContent = 'center';
+      btnContainer.style.width = '100%';
+      btnContainer.style.gap = '10px'; /* 10px padding between borrow, input box and OK */
+
+      const btnB = document.createElement('button');
+      btnB.innerText = 'Borrow';
+      btnB.id = 'borrowBtn';
+      btnB.onclick = () => {
+        mode = 'selectSource';
+        setStepText('Click digit to BORROW FROM');
+      };
+      btnB.style.borderRadius = '6px';
 
       const inp = document.createElement('input');
       inp.type = 'number';
       inp.className = 'input-digit';
-      inp.id = 'ans';
-      area.appendChild(inp);
-
-      const btnContainer = document.createElement('div');
-      btnContainer.style.marginTop = '1rem';
+      inp.id = 'ans'; inp.style.borderRadius = '6px';
+      inp.style.width = '3rem'; // Make it narrower (just 2 chars wide)
+      inp.style.height = '2.5rem'; // Match the height of buttons
+      inp.style.textAlign = 'center'; // Center text in the input box
+      inp.style.fontSize = '1.5rem'; // Larger text for better visibility// Add event listener for Enter key directly on the input field
+      inp.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter') {
+          event.preventDefault();
+          // Only check if there's something in the input field - must have digit(s)
+          if (inp.value.trim() !== '' && /\d/.test(inp.value)) {
+            check(idx);
+            // Ensure we keep focus on the input after pressing Enter
+            setTimeout(() => {
+              inp.focus();
+              inp.value = '';
+            }, 50); // Increased delay to prevent accidental double-entry
+          }
+        }
+      });
 
       const btnOK = document.createElement('button');
       btnOK.innerText = 'OK';
-      btnOK.onclick = () => check(idx);
-
-      const btnB = document.createElement('button');
-      btnB.innerText = 'Borrow';
-      btnB.onclick = () => {
-        mode = 'selectSource';
-        document.getElementById('step').innerText = 'Click digit to BORROW FROM';
+      btnOK.id = 'okBtn'; btnOK.onclick = () => {
+        // Only check if there's something in the input field and it contains at least one digit
+        const inputValue = document.getElementById('ans').value;
+        if (inputValue.trim() !== '' && /\d/.test(inputValue)) {
+          check(idx);
+        } else {
+          // Focus on input field without proceeding
+          const ansElement = document.getElementById('ans');
+          if (ansElement) {
+            ansElement.focus();
+          }
+        }
       };
+      btnOK.style.borderRadius = '6px';
 
-      btnContainer.appendChild(btnOK);
+      // Add elements in the correct order: Borrow on left, input in middle, OK on right
       btnContainer.appendChild(btnB);
-      area.appendChild(btnContainer);
+      btnContainer.appendChild(inp);
+      btnContainer.appendChild(btnOK);
+
+      area.appendChild(btnContainer);      // Set focus on the input field after rendering
+      setTimeout(() => {
+        const ansElement = document.getElementById('ans');
+        if (ansElement) {
+          ansElement.focus();
+          ansElement.value = ''; // Ensure it's empty
+        }
+      }, 10);
 
       // Ensure highlighter is aligned for both top and bottom rows
       const activeTopHighlight = document.querySelector('.highlight-top');
@@ -755,26 +1386,23 @@
       if (newBotHighlight) {
         newBotHighlight.classList.add('highlight-bot');
       }
-    }
-
-    function generateNewChallenge() {
-      document.getElementById('generateChallenge').click();
+    } function generateNewChallenge() {
+      generateNewChallengeHandler();
     }
 
     function handleClick(i) {
       if (mode === 'selectSource') {
         if (workDigits[positions[col]] >= sDigits[positions[col]]) { // Check if borrowing is unnecessary
-          document.getElementById('step').innerText = 'Do not need to borrow anything';
+          setStepText('Do not need to borrow anything');
           setTimeout(() => {
             const t = workDigits[positions[col]], b = sDigits[positions[col]];
-            document.getElementById('step').innerText = `What is ${t} - ${b}?`;
+            setStepText(`What is ${t} - ${b}?`);
           }, 0); // Immediately re-ask the sum question
           return;
-        }
-        if (workDigits[i] === 0) {
-          document.getElementById('step').innerText = 'Cannot borrow from 0';
+        } if (workDigits[i] === 0) {
+          setStepText('Cannot borrow from 0');
           setTimeout(() => {
-            document.getElementById('step').innerText = 'Click digit to BORROW FROM';
+            setStepText('Click digit to BORROW FROM');
           }, 2000); // Re-ask the borrow question after 2 seconds
           return;
         }
@@ -796,9 +1424,9 @@
         cascadeBorrow(borrowSrc, positions[col]); // Ensure borrowing targets the correct column
       } else if (mode === 'selectTarget') {
         if (i !== positions[col]) {
-          document.getElementById('step').innerText = 'Incorrect target';
+          setStepText('Incorrect target');
           setTimeout(() => {
-            document.getElementById('step').innerText = 'Which digit do you want to BORROW TO?';
+            setStepText('Which digit do you want to BORROW TO?');
           }, 2000); // Re-ask the borrow-to question after 2 seconds
           return;
         }
@@ -816,7 +1444,7 @@
           combo: currentCombo,
           challengeType: mDigits.includes('.') ? 'decimal' : 'integer'
         });
-        document.getElementById('step').innerText = `Add 10 to column ${i}`;
+        setStepText(`Add 10 to column ${i}`);
         animateChange(i, workDigits[i], workDigits[i] + 10, 1);
         setTimeout(() => {
           workDigits[i] += 10;
@@ -836,7 +1464,7 @@
         }
 
         if (i >= 0 && workDigits[i] === 0) {
-          document.getElementById('step').innerText = `Column ${i + 1} is 0, becomes 9, continue.`; // Correct column number
+          setStepText(`Column ${i + 1} is 0, becomes 9, continue.`); // Correct column number
           animateChange(i, workDigits[i], 9); // Animate zero becoming 9
           setTimeout(() => {
             workDigits[i] = 9;
@@ -844,11 +1472,11 @@
             step(); // Continue cascading borrow
           }, 1000); // Reduce delay for smoother cascading
         } else if (i >= 0) {
-          document.getElementById('step').innerText = `Borrow 1 from column ${i + 1}`; // Correct column number
+          setStepText(`Borrow 1 from column ${i + 1}`); // Correct column number
           animateChange(i, workDigits[i], workDigits[i] - 1); // Animate decrement
           setTimeout(() => {
             workDigits[i]--;
-            document.getElementById('step').innerText = `Add 10 to column ${tgt + 1}`; // Correct column number
+            setStepText(`Add 10 to column ${tgt + 1}`); // Correct column number
             animateChange(tgt, workDigits[tgt], workDigits[tgt] + 10); // Animate addition
             setTimeout(() => {
               workDigits[tgt] += 10;
@@ -859,7 +1487,7 @@
             }, 1000); // Reduce delay for smoother addition
           }, 1000);
         } else {
-          document.getElementById('step').innerText = 'Borrowing failed: No valid source column.';
+          setStepText('Borrowing failed: No valid source column.');
           mode = 'compute';
         }
       }
@@ -879,6 +1507,20 @@
         digitElement.style.transform = 'scale(1)';
         digitElement.style.opacity = '1';
       }, 2500);
+    }    // Helper function to set step text with automatic message length detection
+    function setStepText(text) {
+      const stepEl = document.getElementById('step');
+      stepEl.innerText = text;
+
+      // Auto-detect if this is a long message that might need special styling
+      if (text.length > 15 || text.includes('BORROW FROM')) {
+        stepEl.dataset.message = 'long';
+      } else {
+        delete stepEl.dataset.message;
+      }
+
+      // Ensure step text doesn't affect layout
+      document.getElementById('problemContainer').style.minHeight = '250px';
     }
 
     // Ensure all buttons in the game use plain sans-serif styling
@@ -897,17 +1539,21 @@
 
     document.addEventListener('DOMContentLoaded', () => {
       applyButtonStyles();
-    });
-
-    function render() {
+    }); function render() {
       const prob = document.getElementById('problem'), res = document.getElementById('results');
       prob.innerHTML = '';
       res.innerHTML = '';
 
-      const topRow = document.createElement('div'), botRow = document.createElement('div'), resRow = document.createElement('div');
+      // Create row elements
+      const topRow = document.createElement('div');
+      const botRow = document.createElement('div');
+      const resRow = document.createElement('div');
       topRow.className = botRow.className = resRow.className = 'row';
+
+      // Move the result row to be immediately below the sum, before the blue text question
       const active = col >= 0 ? positions[col] : -1;
 
+      // Fill rows with digits
       for (let i = 0; i < workDigits.length; i++) {
         const m = workDigits[i], d = sDigits[i];
         const ht = i === active ? 'highlight-top' : '';
@@ -920,101 +1566,165 @@
           topRow.innerHTML += `<div onclick="handleClick(${i})" class="digit ${ht}">${m}</div>`;
         }
 
-        botRow.innerHTML += `<div onclick="handleClick(${i})" class="digit ${hb}">${d}</div>`;
+        botRow.innerHTML += `<div onclick="handleClick(${i})" class="digit ${hb}">${d}</div>`; const result = resultDigits[i];
+        resRow.innerHTML += `<div class="digit" style="color: ${i === active && result === '&nbsp;' ? '#001a1a' : 'white'};">${i === active && result === '&nbsp;' ? '_' : result !== '&nbsp;' ? result : '&nbsp;'}</div>`; // Show '_' in blackboard color (#001a1a) to make it invisible
+      }      // Create container for top row with invisible minus sign
+      const topRowContainer = document.createElement('div');
+      topRowContainer.className = 'row-container';
+      topRowContainer.style.display = 'flex';
+      topRowContainer.style.alignItems = 'center';
+      topRowContainer.style.justifyContent = 'center';
+      topRowContainer.style.margin = '0';
+      topRowContainer.style.padding = '0';
 
-        const result = resultDigits[i];
-        resRow.innerHTML += `<div class="digit" style="color: white; font-size: 5rem;">${i === active && result === '&nbsp;' ? '?' : result !== '&nbsp;' ? result : '&nbsp;'}</div>`; // Show '?' only under the current step and shift left once correct digit is entered
+      // Add invisible minus sign for alignment
+      const invisibleMinusSign = document.createElement('div');
+      invisibleMinusSign.innerHTML = '-';
+      invisibleMinusSign.className = 'minus-sign';
+      invisibleMinusSign.style.color = '#001a1a'; // Same color as blackboard (invisible)      invisibleMinusSign.style.fontSize = '3.2rem'; // Match row font size
+      invisibleMinusSign.style.fontWeight = 'bold';
+      invisibleMinusSign.style.marginRight = '0.6rem'; // Slightly reduced margin
+      invisibleMinusSign.style.display = 'flex';
+      invisibleMinusSign.style.alignItems = 'center';
+      invisibleMinusSign.style.height = '100%';
+      invisibleMinusSign.style.visibility = 'hidden'; // Hide it completely
+      invisibleMinusSign.style.margin = '0';
+      invisibleMinusSign.style.padding = '0';
+
+      topRowContainer.appendChild(invisibleMinusSign);
+      topRowContainer.appendChild(topRow);
+
+      // Create container for bottom row with visible minus sign
+      const bottomRowContainer = document.createElement('div');
+      bottomRowContainer.className = 'row-container';
+      bottomRowContainer.style.display = 'flex';
+      bottomRowContainer.style.alignItems = 'center';
+      bottomRowContainer.style.justifyContent = 'center';
+      bottomRowContainer.style.margin = '0';
+      bottomRowContainer.style.padding = '0';
+
+      // Add visible minus sign
+      const minusSign = document.createElement('div');
+      minusSign.innerHTML = '-';
+      minusSign.className = 'minus-sign';
+      minusSign.style.color = 'white'; minusSign.style.fontSize = '3.2rem'; // Match row font size
+      minusSign.style.fontWeight = 'bold';
+      minusSign.style.marginRight = '0.6rem'; // Slightly reduced margin
+      minusSign.style.display = 'flex';
+      minusSign.style.alignItems = 'center';
+      minusSign.style.height = '100%';
+      minusSign.style.margin = '0';
+      minusSign.style.padding = '0'; bottomRowContainer.appendChild(minusSign);
+      bottomRowContainer.appendChild(botRow);      // Create container for answer row with blackboard-colored minus sign
+      const resRowContainer = document.createElement('div');
+      resRowContainer.className = 'row-container';
+      resRowContainer.style.display = 'flex';
+      resRowContainer.style.alignItems = 'center';
+      resRowContainer.style.justifyContent = 'center';
+      resRowContainer.style.margin = '0';
+      resRowContainer.style.padding = '0';
+
+      // Add blackboard-colored minus sign for the answer row
+      const answerMinusSign = document.createElement('div'); answerMinusSign.innerHTML = '-';
+      answerMinusSign.className = 'minus-sign';
+      answerMinusSign.style.color = '#001a1a'; // Same color as blackboard (invisible but present for spacing)
+      answerMinusSign.style.fontSize = '3.2rem'; // Match row font size
+      answerMinusSign.style.fontWeight = 'bold';
+      answerMinusSign.style.marginRight = '0.6rem'; // Slightly reduced margin
+      answerMinusSign.style.display = 'flex';
+      answerMinusSign.style.alignItems = 'center';
+      answerMinusSign.style.height = '100%';
+      answerMinusSign.style.visibility = 'visible'; // Keep it visible for layout
+      answerMinusSign.style.margin = '0';
+      answerMinusSign.style.padding = '0';
+
+      resRowContainer.appendChild(answerMinusSign);
+      resRowContainer.appendChild(resRow);      // Create spacers between rows - set to 0 to have no gap
+      const topSpacer = document.createElement('div');
+      topSpacer.style.height = '0'; // No space between top and bottom row
+
+      const bottomSpacer = document.createElement('div');
+      bottomSpacer.style.height = '0'; // No space between bottom row and result row
+
+      // Add all rows to the problem div with spacers
+      prob.appendChild(topRowContainer);
+      prob.appendChild(topSpacer);
+      prob.appendChild(bottomRowContainer);
+      prob.appendChild(bottomSpacer);
+      prob.appendChild(resRowContainer);
+
+      // Ensure buttons retain consistent styling
+      applyButtonStyles();
+    }    // --- MENU STATE ---
+    let numberType = 'positive';    // This function will be used by the event listener setup in DOMContentLoaded
+    function generateNewChallengeHandler() {
+      const digitCount = parseInt(document.getElementById('digitCount').value, 10);
+      const decimalPlaces = parseInt(document.getElementById('decimalPlaces').value, 10);
+      const max = Math.pow(10, digitCount) - 1;
+      const min = Math.pow(10, digitCount - 1);
+      let randomMinuend, randomSubtrahend;
+
+      // Generate numbers based on decimal places setting
+      if (decimalPlaces === 0) {
+        // For whole numbers, ensure no decimal places at all
+        if (numberType === 'positive') {
+          // For positive problems, minuend must be larger than subtrahend
+          randomMinuend = Math.floor(Math.random() * (max - min) + min);
+          randomSubtrahend = Math.floor(Math.random() * (randomMinuend - min) + min);
+        } else if (numberType === 'negative') {
+          randomSubtrahend = Math.floor(Math.random() * (max - min) + min);
+          randomMinuend = Math.floor(Math.random() * (randomSubtrahend - min) + min);
+        } else {
+          randomMinuend = Math.floor(Math.random() * (max - min) + min);
+          randomSubtrahend = Math.floor(Math.random() * (max - min) + min);
+        }
+      } else {
+        // For decimal numbers
+        if (numberType === 'positive') {
+          // For positive problems, minuend must be larger than subtrahend
+          randomMinuend = parseFloat((Math.random() * (max - min) + min).toFixed(decimalPlaces));
+          randomSubtrahend = parseFloat((Math.random() * (randomMinuend - min) + min).toFixed(decimalPlaces));
+
+          // Double-check to ensure minuend is larger
+          if (randomMinuend <= randomSubtrahend) {
+            // Swap and adjust to ensure positive result
+            let temp = randomMinuend;
+            randomMinuend = randomSubtrahend * 1.5; // Make it larger
+            randomSubtrahend = temp / 2; // Make it smaller
+          }
+        } else if (numberType === 'negative') {
+          randomSubtrahend = parseFloat((Math.random() * (max - min) + min).toFixed(decimalPlaces));
+          randomMinuend = parseFloat((Math.random() * (randomSubtrahend - min) + min).toFixed(decimalPlaces));
+        } else {
+          randomMinuend = parseFloat((Math.random() * (max - min) + min).toFixed(decimalPlaces));
+          randomSubtrahend = parseFloat((Math.random() * (max - min) + min).toFixed(decimalPlaces));
+        }
       }
+      document.getElementById('minuend').value = randomMinuend;
+      document.getElementById('subtrahend').value = randomSubtrahend;
+      startSubtraction();
 
-      prob.appendChild(topRow);
-      prob.appendChild(botRow);
-      prob.appendChild(resRow); // Append the answer line directly below the sum
-
-      applyButtonStyles(); // Ensure buttons retain consistent styling
+      // Set focus on the answer box after starting a new round
+      setTimeout(() => {
+        const ansElement = document.getElementById('ans');
+        if (ansElement) {
+          ansElement.focus();
+        }
+      }, 100);
     }
+    // These event listeners will be set up in the main DOMContentLoaded handler below
+    if (numberType === 'positive') {
+      numberType = 'negative';
+      this.innerText = 'Only Negative';
+    } else if (numberType === 'negative') {
+      numberType = 'mixed';
+      this.innerText = 'Mixed';
+    } else {
+      numberType = 'positive'; this.innerText = 'Only Positive';
+    }
+    // Removed duplicate event listener, now in main DOMContentLoaded
 
-    document.addEventListener('DOMContentLoaded', () => {
-      const generateButton = document.getElementById('generateChallenge');
-      const digitCountSelect = document.getElementById('digitCount');
-      let includeDecimal = false;
-
-      document.getElementById('includeDecimal').addEventListener('click', () => {
-        includeDecimal = !includeDecimal;
-        alert(`Decimal point ${includeDecimal ? 'included' : 'excluded'}`);
-      });
-
-      digitCountSelect.addEventListener('change', () => {
-        const digitCount = parseInt(digitCountSelect.value, 10);
-        generateButton.click(); // Automatically generate a challenge
-      });
-
-      generateButton.addEventListener('click', () => {
-        const digitCount = parseInt(digitCountSelect.value, 10);
-        const max = Math.pow(10, digitCount) - 1;
-        const min = Math.pow(10, digitCount - 1);
-        let randomMinuend, randomSubtrahend;
-
-        if (numberType === 'positive') {
-          randomMinuend = (Math.random() * (max - min) + min).toFixed(includeDecimal ? 1 : 0);
-          randomSubtrahend = (Math.random() * (randomMinuend - min) + min).toFixed(includeDecimal ? 1 : 0);
-        } else if (numberType === 'negative') {
-          randomSubtrahend = (Math.random() * (max - min) + min).toFixed(includeDecimal ? 1 : 0);
-          randomMinuend = (Math.random() * (randomSubtrahend - min) + min).toFixed(includeDecimal ? 1 : 0);
-        } else {
-          randomMinuend = (Math.random() * (max - min) + min).toFixed(includeDecimal ? 1 : 0);
-          randomSubtrahend = (Math.random() * (max - min) + min).toFixed(includeDecimal ? 1 : 0);
-        }
-
-        document.getElementById('minuend').value = randomMinuend;
-        document.getElementById('subtrahend').value = randomSubtrahend;
-        startSubtraction();
-      });
-
-      const numberTypeToggle = document.getElementById('numberTypeToggle');
-      let numberType = 'positive'; // Default to 'Only Positive'
-
-      numberTypeToggle.addEventListener('click', () => {
-        if (numberType === 'positive') {
-          numberType = 'negative';
-          numberTypeToggle.innerText = 'Only Negative';
-        } else if (numberType === 'negative') {
-          numberType = 'mixed';
-          numberTypeToggle.innerText = 'Mixed';
-        } else {
-          numberType = 'positive';
-          numberTypeToggle.innerText = 'Only Positive';
-        }
-      });
-
-      document.getElementById('generateChallenge').addEventListener('click', () => {
-        const digitCount = parseInt(document.getElementById('digitCount').value, 10);
-        const max = Math.pow(10, digitCount) - 1;
-        const min = Math.pow(10, digitCount - 1);
-        let randomMinuend, randomSubtrahend;
-
-        if (numberType === 'positive') {
-          randomMinuend = (Math.random() * (max - min) + min).toFixed(includeDecimal ? 1 : 0);
-          randomSubtrahend = (Math.random() * (randomMinuend - min) + min).toFixed(includeDecimal ? 1 : 0);
-        } else if (numberType === 'negative') {
-          randomSubtrahend = (Math.random() * (max - min) + min).toFixed(includeDecimal ? 1 : 0);
-          randomMinuend = (Math.random() * (randomSubtrahend - min) + min).toFixed(includeDecimal ? 1 : 0);
-        } else {
-          randomMinuend = (Math.random() * (max - min) + min).toFixed(includeDecimal ? 1 : 0);
-          randomSubtrahend = (Math.random() * (max - min) + min).toFixed(includeDecimal ? 1 : 0);
-        }
-
-        document.getElementById('minuend').value = randomMinuend;
-        document.getElementById('subtrahend').value = randomSubtrahend;
-        startSubtraction();
-      });
-    });
-
-    let userName = localStorage.getItem('userName') || '';
-    let allProgress = {};
-    try {
-      allProgress = JSON.parse(localStorage.getItem('allProgress')) || {};
-    } catch (e) { allProgress = {}; }
-
+    // We've consolidated all these event listeners in the main DOMContentLoaded section
     function saveAllProgress() {
       localStorage.setItem('allProgress', JSON.stringify(allProgress));
     }
@@ -1023,9 +1733,7 @@
       if (!userName) return [];
       if (!allProgress[userName]) allProgress[userName] = [];
       return allProgress[userName];
-    }
-
-    // --- TRACKING LOGIC ---
+    }// --- TRACKING LOGIC ---
     // Call this after every step (not just challenge)
     function recordStepProgress({
       digits, decimals, correct, incorrect, stepType, action, speed, combo, challengeType
@@ -1039,38 +1747,11 @@
         totalSteps: 1,
         stepType, action, speed, combo, challengeType
       });
-      saveAllProgress();
-      // If chart modal is open, re-render the graph
+      saveAllProgress();      // If chart modal is open, re-render the graph
       const chartModal = document.getElementById('progressChart');
       if (chartModal && typeof window.renderGraph === 'function') window.renderGraph();
     }
 
-    // Change button label from Enter Name to New User
-    document.getElementById('enterName').textContent = 'New User';
-
-    // Track if userName has changed in this session
-    let lastUserName = userName;
-
-    document.getElementById('enterName').addEventListener('click', () => {
-      const newUserName = prompt('Enter your name:');
-      if (newUserName) {
-        userName = newUserName;
-        lastUserName = userName;
-        localStorage.setItem('userName', userName);
-        if (!allProgress[userName]) {
-          allProgress[userName] = [];
-          saveAllProgress();
-        }
-        alert(`Welcome, ${userName}!`);
-      }
-    });
-
-    document.getElementById('viewProgress').addEventListener('click', () => {
-      // Logic to display the graph-based modal
-      showProgressModal();
-    });
-
-    // --- PROGRESS MODAL WITH SCALABLE BAR CHARTS, SLIDER, RADIO BUTTONS ---
     function showProgressModal() {
       // Define filter variables at the top so they are accessible to renderGraph
       let selectedDigits = 'all';
@@ -1080,10 +1761,33 @@
       const oldModal = document.getElementById('progressChart');
       if (oldModal) oldModal.remove();
 
-      // Modal setup
+      // Check if user is selected
+      if (!userName) {
+        alert('Please select or create a user first');
+        document.getElementById('userManageBtn').click();
+        return;
+      }// Modal setup
       const modal = document.createElement('div');
       modal.id = 'progressChart';
       modal.style.display = 'block'; // Ensure modal is visible
+
+      // Set fixed positioning
+      modal.style.position = 'fixed';
+      modal.style.top = '50%';
+      modal.style.left = '50%';
+      modal.style.transform = 'translate(-50%, -50%)';
+      modal.style.zIndex = '9999';
+      modal.style.background = '#333';
+      modal.style.color = '#fff';
+      modal.style.border = '3px solid #afa';
+      modal.style.borderRadius = '12px';
+      modal.style.padding = '2rem';
+      modal.style.width = '80%';
+      modal.style.maxWidth = '900px';
+      modal.style.maxHeight = '85%';
+      modal.style.overflow = 'auto';
+      modal.style.boxShadow = '0 0 20px rgba(0, 0, 0, 0.8)';
+      modal.style.fontFamily = 'Arial, sans-serif';
 
       // Close button (top right)
       const closeBtn = document.createElement('button');
@@ -1102,20 +1806,29 @@
       closeBtn.onclick = () => modal.remove();
       modal.appendChild(closeBtn);
 
-      // User selector if multiple users
-      const userNames = Object.keys(allProgress);
-      let selectedUser = userName;
-      if (userNames.length > 1) {
-        const userSelect = document.createElement('select');
-        userNames.forEach(n => {
-          const opt = document.createElement('option');
-          opt.value = n; opt.textContent = n;
-          if (n === userName) opt.selected = true;
-          userSelect.appendChild(opt);
-        });
-        userSelect.onchange = () => { selectedUser = userSelect.value; renderGraph(); };
-        modal.appendChild(userSelect);
-      }
+      // Current user display
+      const userInfo = document.createElement('div');
+      userInfo.innerHTML = `<h2 style="margin:0.5rem 0; font-size:2rem;">Stats for: <span style="color:#afa;">${userName}</span></h2>`;
+      userInfo.style.textAlign = 'center';
+      modal.appendChild(userInfo);
+
+      // Button to switch user
+      const switchUserBtn = document.createElement('button');
+      switchUserBtn.innerText = 'Switch User';
+      switchUserBtn.style.display = 'block';
+      switchUserBtn.style.margin = '0.5rem auto';
+      switchUserBtn.style.padding = '0.5rem 1rem';
+      switchUserBtn.style.fontSize = '1.2rem';
+      switchUserBtn.style.background = '#444';
+      switchUserBtn.style.color = '#afa';
+      switchUserBtn.style.border = '2px solid #afa';
+      switchUserBtn.style.borderRadius = '8px';
+      switchUserBtn.style.cursor = 'pointer';
+      switchUserBtn.addEventListener('click', () => {
+        modal.remove();
+        document.getElementById('userManageBtn').click();
+      });
+      modal.appendChild(switchUserBtn);
 
       // Radio buttons for stat type
       const statTypes = [
@@ -1176,42 +1889,62 @@
       sliderWrap.appendChild(document.createTextNode('Time Scale:'));
       sliderWrap.appendChild(slider);
       sliderWrap.appendChild(scaleLabel);
-      modal.appendChild(sliderWrap);
-
-      // Canvas for graph
+      modal.appendChild(sliderWrap);      // Canvas for graph
       const canvas = document.createElement('canvas');
       canvas.width = Math.floor(window.innerWidth * 0.7);
       canvas.height = Math.floor(window.innerHeight * 0.55);
       canvas.style.background = '#111';
       canvas.style.borderRadius = '12px';
       canvas.style.marginTop = '2rem';
+      canvas.style.maxWidth = '100%';
       modal.appendChild(canvas);
 
       // Add digits and decimals dropdowns for filtering
-      let allEntries = Object.values(allProgress).flat();
+      let allEntries = allProgress[userName] || [];
       const digitsSet = new Set();
       const decimalsSet = new Set();
       allEntries.forEach(entry => {
         if (entry.digits !== undefined) digitsSet.add(entry.digits);
         if (entry.decimals !== undefined) decimalsSet.add(entry.decimals);
       });
+
+      const filterContainer = document.createElement('div');
+      filterContainer.style.display = 'flex';
+      filterContainer.style.justifyContent = 'center';
+      filterContainer.style.gap = '1rem';
+      filterContainer.style.margin = '1rem 0';
+
       const digitsDropdown = document.createElement('select');
-      digitsDropdown.style.margin = '0 1rem';
+      digitsDropdown.style.padding = '0.5rem';
+      digitsDropdown.style.fontSize = '1rem';
+      digitsDropdown.style.background = '#444';
+      digitsDropdown.style.color = '#fff';
+      digitsDropdown.style.border = '2px solid #afa';
+      digitsDropdown.style.borderRadius = '8px';
       digitsDropdown.innerHTML = '<option value="all">All Digits</option>' +
         Array.from(digitsSet).sort((a, b) => a - b).map(d => `<option value="${d}">${d} Digits</option>`).join('');
       digitsDropdown.onchange = () => { selectedDigits = digitsDropdown.value; renderGraph(); };
-      modal.appendChild(digitsDropdown);
+
       const decimalsDropdown = document.createElement('select');
-      decimalsDropdown.style.margin = '0 1rem';
+      decimalsDropdown.style.padding = '0.5rem';
+      decimalsDropdown.style.fontSize = '1rem';
+      decimalsDropdown.style.background = '#444';
+      decimalsDropdown.style.color = '#fff';
+      decimalsDropdown.style.border = '2px solid #afa';
+      decimalsDropdown.style.borderRadius = '8px';
       decimalsDropdown.innerHTML = '<option value="all">All</option>' +
         Array.from(decimalsSet).sort().map(d => `<option value="${d}">${d == 1 ? 'With Decimals' : 'No Decimals'}</option>`).join('');
       decimalsDropdown.onchange = () => { selectedDecimals = decimalsDropdown.value; renderGraph(); };
-      modal.appendChild(decimalsDropdown);
+
+      filterContainer.appendChild(document.createTextNode('Filter:'));
+      filterContainer.appendChild(digitsDropdown);
+      filterContainer.appendChild(decimalsDropdown);
+      modal.appendChild(filterContainer);
 
       function renderGraph() {
         const ctx = canvas.getContext('2d');
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        let data = allProgress[selectedUser] || [];
+        let data = allProgress[userName] || [];
         if (selectedDigits !== 'all') data = data.filter(e => e.digits == selectedDigits);
         if (selectedDecimals !== 'all') data = data.filter(e => e.decimals == selectedDecimals);
         if (!data.length) {
@@ -1325,29 +2058,96 @@
         if (selectedStat === 'correct') statLabel = 'Correct Challenges';
         ctx.fillText(statLabel, 0, 0);
         ctx.restore();
-      }
-      window.renderGraph = renderGraph;
+
+        // Add statistics summary
+        const statsDiv = document.createElement('div');
+        statsDiv.style.marginTop = '1rem';
+        statsDiv.style.textAlign = 'center';
+        statsDiv.style.fontSize = '1.2rem';
+
+        let totalCorrect = 0;
+        let totalIncorrect = 0;
+        let totalTime = 0;
+        let bestCombo = 0;
+
+        data.forEach(entry => {
+          if (entry.correct) totalCorrect++;
+          if (entry.incorrect) totalIncorrect++;
+          if (entry.speed) totalTime += entry.speed;
+          if (entry.combo && entry.combo > bestCombo) bestCombo = entry.combo;
+        });
+
+        statsDiv.innerHTML = `
+          <div style="display:flex; justify-content:space-around; margin-top:1rem;">
+            <div>Total Correct: <span style="color:#0f0">${totalCorrect}</span></div>
+            <div>Total Incorrect: <span style="color:#f00">${totalIncorrect}</span></div>
+            <div>Accuracy: <span style="color:#0af">${totalCorrect + totalIncorrect > 0 ? Math.round((totalCorrect / (totalCorrect + totalIncorrect)) * 100) : 0}%</span></div>
+            <div>Best Combo: <span style="color:#f90">${bestCombo}</span></div>
+          </div>
+        `;
+
+        // Replace any existing stats div
+        const existingStats = modal.querySelector('.stats-summary');
+        if (existingStats) {
+          existingStats.remove();
+        }
+        statsDiv.classList.add('stats-summary');
+        modal.appendChild(statsDiv);
+      } window.renderGraph = renderGraph;
       renderGraph();
+
+      // Clear Stats button
+      const clearStatsBtn = document.createElement('button');
+      clearStatsBtn.innerText = 'Clear Stats';
+      clearStatsBtn.style.display = 'block';
+      clearStatsBtn.style.margin = '1rem auto';
+      clearStatsBtn.style.padding = '0.5rem 1rem';
+      clearStatsBtn.style.fontSize = '1.2rem';
+      clearStatsBtn.style.background = '#d44';
+      clearStatsBtn.style.color = '#fff';
+      clearStatsBtn.style.border = '2px solid #f66';
+      clearStatsBtn.style.borderRadius = '8px';
+      clearStatsBtn.style.cursor = 'pointer';
+      clearStatsBtn.addEventListener('click', () => {
+        if (confirm(`Are you sure you want to clear all stats for ${userName}? This action cannot be undone.`)) {
+          // Clear the user's stats
+          if (allProgress[userName]) {
+            delete allProgress[userName];
+            saveAllProgress();
+
+            // Close the modal and show confirmation
+            modal.remove();
+            alert(`All stats for ${userName} have been cleared.`);
+          }
+        }
+      });
+      modal.appendChild(clearStatsBtn);
+
       document.body.appendChild(modal);
+
+      // Debug message
+      console.log('Stats modal created and shown');
     }
 
-    document.addEventListener('DOMContentLoaded', () => {
-      const hasSeenInstructions = localStorage.getItem('hasSeenInstructions');
-      if (!hasSeenInstructions) {
-        showInstructions();
-        localStorage.setItem('hasSeenInstructions', 'true');
-      }
-
-      document.getElementById('tutorial').addEventListener('click', () => {
-        showInstructions();
-      });
-    });
+    // This DOMContentLoaded handler is consolidated into the main one at the top
+    // document.addEventListener('DOMContentLoaded', () => {
+    //   const hasSeenInstructions = localStorage.getItem('hasSeenInstructions');
+    //   if (!hasSeenInstructions) {
+    //     showInstructions();
+    //     localStorage.setItem('hasSeenInstructions', 'true');
+    //   }
+    // });    // Setup user management
+    updateUserDisplay();
+    populateUserList();    // }); - This closing bracket was removed because it was duplicated
 
     function showInstructions() {
       const instructions = document.getElementById('instructions');
-      instructions.style.display = 'block';
-      document.body.classList.add('no-scroll'); // Prevent scrolling when instructions are open
-      showPage('page1'); // Start with the first page
+      if (instructions) {
+        instructions.style.display = 'block';
+        instructions.style.zIndex = '9999'; // Ensure it's on top
+        document.body.classList.add('no-scroll'); // Prevent scrolling when instructions are open
+        showPage('page1'); // Start with the first page
+      }
     }
 
     function hideInstructions() {
@@ -1359,7 +2159,10 @@
     function showPage(pageId) {
       const pages = document.querySelectorAll('.instruction-page');
       pages.forEach(page => page.style.display = 'none'); // Hide all pages
-      document.getElementById(pageId).style.display = 'block'; // Show the selected page
+      const selectedPage = document.getElementById(pageId);
+      if (selectedPage) {
+        selectedPage.style.display = 'block'; // Show the selected page
+      }
     }
 
     function updateProgress(digitCount, isCorrect) {
@@ -1377,32 +2180,34 @@
       }
 
       saveProgressToRegistry();
-    }
-
-    function playWinAnimation() {
+    } function playWinAnimation() {
       const body = document.body;
       const correctElement = document.createElement('div');
 
-      // Create a separate CORRECT element
+      // Create a separate CORRECT element that starts in the center
       correctElement.id = 'correctMessage';
       correctElement.innerText = 'CORRECT';
       correctElement.style.position = 'absolute';
-      correctElement.style.top = '10%';
-      correctElement.style.left = '50%';
-      correctElement.style.transform = 'translateX(-50%)';
+      correctElement.style.top = '50%'; // Center vertically
+      correctElement.style.left = '50%'; // Center horizontally
+      correctElement.style.transform = 'translate(-50%, -50%)'; // Center the element itself
       correctElement.style.fontSize = '10rem'; // Bigger than the sum text
       correctElement.style.color = '#0f0'; // Bright green
-      correctElement.style.animation = 'grow-and-fade 3s ease-in-out';
+      correctElement.style.animation = 'correct-animation 3s ease-in-out';
       correctElement.style.zIndex = '100';
+      correctElement.style.textAlign = 'center';
+      correctElement.style.width = 'auto';
+      correctElement.style.margin = '0 auto';
 
       document.body.appendChild(correctElement);
 
       const style = document.createElement('style');
       style.innerHTML = `
-            @keyframes grow-and-fade {
-                0% { transform: scale(0.5); opacity: 0; }
-                50% { transform: scale(1.5); opacity: 1; }
-                100% { transform: scale(2); opacity: 0; }
+            @keyframes correct-animation {
+                0% { transform: translate(-50%, -50%) scale(0.1); opacity: 0; }
+                10% { transform: translate(-50%, -50%) scale(0.5); opacity: 1; }
+                50% { transform: translate(-50%, -50%) scale(1.5); opacity: 1; }
+                100% { transform: translate(-50%, -50%) scale(2); opacity: 0; }
             }
 
             @keyframes rainbowSky {
@@ -1413,10 +2218,7 @@
                 100% { background: linear-gradient(to top, red, orange); }
             }
         `;
-      document.head.appendChild(style);
-
-      body.style.animation = 'rainbowSky 3s linear';
-
+      document.head.appendChild(style); body.style.animation = 'rainbowSky 3s linear';
       setTimeout(() => {
         body.style.animation = '';
         correctElement.remove();
@@ -1430,14 +2232,28 @@
           totalSteps,
           speed: (Date.now() - challengeStartTime) / 1000,
           combo: currentCombo,
+          stepType: 'challenge-complete', // Mark this as a completed challenge for stats tracking
           challengeType: mDigits.includes('.') ? 'decimal' : 'integer'
         });
-        generateNewChallenge();
-        const ansElement = document.getElementById('ans');
-        if (ansElement) {
-          ansElement.focus();
-        }
+        // Generate a new challenge and ensure focus
+        generateNewChallengeHandler();
+
+        // Make sure to focus on the answer box for the new round
+        setTimeout(() => {
+          const ansElement = document.getElementById('ans');
+          if (ansElement) {
+            ansElement.focus();
+            ansElement.value = '';
+          }
+        }, 100);
       }, 3000); // Celebration duration extended by 1 second
+    }
+
+    // Helper function for getting week number of a date
+    function getWeekNumber(date) {
+      const firstDayOfYear = new Date(date.getFullYear(), 0, 1);
+      const pastDaysOfYear = (date - firstDayOfYear) / 86400000;
+      return Math.ceil((pastDaysOfYear + firstDayOfYear.getDay() + 1) / 7);
     }
 
     // Add rainbow animation keyframes
@@ -1451,9 +2267,22 @@
         100% { background: linear-gradient(to top, red, orange); }
       }
     `;
-    document.head.appendChild(style);
-
+    document.head.appendChild(style);    // Initialize user interface and other setup (consolidated event listener logic)
     document.addEventListener('DOMContentLoaded', () => {
+      // Check if instructions have been seen before
+      const hasSeenInstructions = localStorage.getItem('hasSeenInstructions');
+      if (!hasSeenInstructions) {
+        showInstructions();
+        localStorage.setItem('hasSeenInstructions', 'true');
+      }
+
+      // Set up event handler for the close button on instructions
+      const closeInstructionsBtn = document.getElementById('closeInstructions');
+      if (closeInstructionsBtn) {
+        closeInstructionsBtn.onclick = function () {
+          hideInstructions();
+        };
+      }
       const progressData = JSON.parse(localStorage.getItem('progressData')) || {};
 
       function saveProgressToLocalStorage() {
@@ -1474,18 +2303,95 @@
         } else {
           progressData[digitKey][hour].incorrect++;
           progressData[digitKey][hour].stars = Math.max(0, progressData[digitKey][hour].stars - 1); // Lose a star for every wrong move
-        }
+        } saveProgressToLocalStorage();
+      }
 
-        saveProgressToLocalStorage();
+      // User management functions - Close button only, the open button is handled in DOMContentLoadeddocument.getElementById('closeUserModal').addEventListener('click', () => {
+      document.getElementById('userModal').style.display = 'none';
+    });
+
+    document.getElementById('newUserBtn').addEventListener('click', () => {
+      const newUserName = prompt('Enter your name:');
+      if (newUserName && newUserName.trim()) {
+        userName = newUserName.trim();
+        localStorage.setItem('userName', userName);
+        if (!allProgress[userName]) {
+          allProgress[userName] = [];
+          saveAllProgress();
+        }
+        updateUserDisplay();
+        populateUserList();
+        alert(`Welcome, ${userName}!`);
+        // Close the user modal after creating a user          document.getElementById('userModal').style.display = 'none';
       }
     });
 
-    document.getElementById('aboutBtn').onclick = function () {
-      document.getElementById('aboutModal').style.display = 'block';
-    };
-    document.getElementById('closeAbout').onclick = function () {
-      document.getElementById('aboutModal').style.display = 'none';
-    };
+    // User management functions
+
+    // User management functions
+    function updateUserDisplay() {
+      const userDisplay = document.getElementById('currentUserDisplay');
+      if (userDisplay) {
+        if (userName) {
+          userDisplay.innerHTML = `Current User: <strong>${userName}</strong>`;
+        } else {
+          userDisplay.innerHTML = 'No user selected';
+        }
+      }
+    }
+
+    function populateUserList() {
+      const userList = document.getElementById('userList');
+      if (!userList) return;
+
+      userList.innerHTML = '';
+
+      const users = Object.keys(allProgress);
+      if (users.length === 0) {
+        userList.innerHTML = '<div style="padding:0.5rem; text-align:center;">No users yet</div>';
+        return;
+      }
+
+      users.forEach(user => {
+        const userBtn = document.createElement('button');
+        userBtn.innerText = user;
+        userBtn.style.fontSize = '1.2rem';
+        userBtn.style.padding = '0.5rem';
+        userBtn.style.margin = '0.2rem 0';
+        userBtn.style.background = user === userName ? '#2a6' : '#444';
+        userBtn.style.color = '#fff';
+        userBtn.style.border = '2px solid #afa';
+        userBtn.style.borderRadius = '8px';
+        userBtn.style.cursor = 'pointer'; userBtn.style.width = '100%';
+        userBtn.style.textAlign = 'left';
+        userBtn.addEventListener('click', () => {
+          userName = user;
+          localStorage.setItem('userName', userName);
+          updateUserDisplay();
+          populateUserList();
+          // Close the user modal after selecting a user
+          const userModal = document.getElementById('userModal');
+          if (userModal) {
+            userModal.style.display = 'none';
+          }
+          document.getElementById('userModal').style.display = 'none';
+        });
+
+        userList.appendChild(userBtn);
+      });
+    }
+    // Removed duplicate event handler for aboutBtn - it's now in the main DOMContentLoaded listener
+    // document.getElementById('closeAbout').onclick = function () {
+    //   document.getElementById('aboutModal').style.display = 'none';
+    // };
+    // Fix any broken variable declarations
+    // Note: userName and allProgress are declared at the top level so no need to redeclare them here
+    const closeAbout = document.getElementById('closeAbout');
+    if (closeAbout) {
+      closeAbout.onclick = function () {
+        document.getElementById('aboutModal').style.display = 'none';
+      };
+    }
   </script>
 </body>
 
