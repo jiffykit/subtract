@@ -874,12 +874,13 @@
           style="font-size: 1.5rem; padding: 0.5rem 1rem; background: #444; color: #afa; border: 2px solid #afa; border-radius: 8px; cursor: pointer;">Next</button>
       </div>
     </div>
-
     <div id="page3" class="instruction-page" style="display: none;">
       <h1 style="font-size: 2.5rem; color: #afa; text-align: center;">Borrowing</h1>
       <p>If the top number is smaller than the bottom number in a column, you need to <strong>borrow</strong>.</p>
       <p>Press the <strong>B</strong> key or click the <strong>Borrow</strong> button.</p>
       <p>Then click on the digit you want to borrow from (usually the digit to the left).</p>
+      <p><strong>Important:</strong> You can only enter a negative number in the leftmost column (if the final answer is
+        negative). For other columns, you must borrow instead.</p>
       <div style="text-align: center; margin-top: 20px;">
         <button onclick="showPage('page4')"
           style="font-size: 1.5rem; padding: 0.5rem 1rem; background: #444; color: #afa; border: 2px solid #afa; border-radius: 8px; cursor: pointer;">Next</button>
@@ -1169,9 +1170,7 @@
       }
 
       // Only increment steps when we have valid digit input
-      totalSteps++;
-
-      if (!/^-?\d+(\.\d+)?$/.test(v)) {
+      totalSteps++; if (!/^-?\d+(\.\d+)?$/.test(v)) {
         // Only show "Try again" for invalid format if we actually have digits
         setStepText('Try again!');
         setTimeout(() => {
@@ -1183,8 +1182,23 @@
         }, 50);
         return;
       }
+
       const numV = parseFloat(v);
       const expectedResult = workDigits[idx] - sDigits[idx];
+
+      // Check if user is trying to enter negative number in non-leftmost column
+      if (numV < 0 && idx !== positions[0]) {
+        setStepText("You can't take " + sDigits[idx] + " from " + workDigits[idx] + ". You need to borrow.");
+        setTimeout(() => {
+          const ansElement = document.getElementById('ans');
+          if (ansElement) {
+            ansElement.focus();
+            ansElement.value = '';
+          }
+        }, 1500);
+        return;
+      }
+
       let isCorrect = false; if (numV === expectedResult) {
         correctSteps++;
         isCorrect = true;
